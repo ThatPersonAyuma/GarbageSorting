@@ -13,6 +13,9 @@ class ItemList:
         
     def pop(self, position:int) -> objects.TrashObject:
         obj = self.inventory.pop(position+(self.position*self.max_show))
+        if self.position>0:
+            if len(self.inventory) <= self.position*self.max_show:
+                self.position-=1
         return obj
     
     def refill(self, trash:list[objects.TrashObject])->bool:

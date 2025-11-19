@@ -69,7 +69,6 @@ class Button():
         # ctx.move_to(-tw/2 - xb, -th/2 - yb)
         ctx.show_text(text)
         ctx.restore()
-        surf.write_to_png("output.png")
 
         return convert.convert_cairo_to_pygame_surf(surf)
 

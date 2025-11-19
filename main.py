@@ -88,7 +88,7 @@ ctxa.set_source_rgb(0, 1, 0)
 ctxa.arc(widthb/2, heightb/2, heightb//2, 0, 2*3.14159)
 ctxa.fill()
 items = [TrashObject(100,100, surface, "botol", TrashType.ORGANIC), TrashObject(100,100,surface2,"Yam-Yam", TrashType.PLASTIC), TrashObject(100,100,surface,"3", TrashType.ORGANIC),
-         TrashObject(100,100,surface2,"4", TrashType.OTHERS), TrashObject(100,100,surface,"5", TrashType.OTHERS), TrashObject(100,100,surface2,"6", TrashType.ORGANIC)]
+        TrashObject(100,100,surface2,"4", TrashType.OTHERS), TrashObject(100,100,surface,"5", TrashType.OTHERS), TrashObject(100,100,surface2,"6", TrashType.ORGANIC)]
 garbage = ItemList(items, start_pos=SCROLL_POS, spacing=SCROLL_SPACING, max_show=5, box_size=BOX_SIZE)  # tampil maksimal 3 item
 # endregion
 
@@ -146,12 +146,11 @@ in_transition = False
 progress = 0.0
 
 w_lf =80 ;h_lf=60
-button_left = button.Button(BTN_MARGIN,(HEIGHT//2)-w_lf//2, w_lf, h_lf, "<", 34, Nothing, 0, )
+button_left = button.Button(BTN_MARGIN,(HEIGHT//2)-w_lf//2, w_lf, h_lf, "<", 34, Nothing, 0)
 button_right = button.Button(WIDTH-BTN_MARGIN-w_lf,(HEIGHT//2)-w_lf//2, w_lf, h_lf, ">", 34, Nothing, 0)
 
 # endregion
 
-toggle_button = button.Button(WIDTH//3, HEIGHT-100,150,50, "Click Me", 24, Nothing, 0)
 # --- Transition mask using cairo ---
 def create_wipe_mask(progress, direction):
     cairo_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
@@ -176,7 +175,7 @@ def create_wipe_mask(progress, direction):
 dragged_object:objects.TrashObject
 dragged_index:int
 def sorting_sceen():
-    global dragged_index, trashbeans, state, current_scene, dt, garbage, dragging, dragged_object, offset_x, offset_y, direction, next_scene
+    global dragged_index, trashbeans, state, current_scene, dt, garbage, dragging, dragged_object, offset_x, offset_y, direction, next_scene, hold_item, old_hi_rect
     screen.blit(current_scene, (0, 0))
     
     pos=pygame.mouse.get_pos()
@@ -201,9 +200,25 @@ def sorting_sceen():
                         offset_x = (obj.rect[0] - mx)
                         offset_y = (obj.rect[1] - my)
                         break
+                if hold_item==None:
+                    if len(garbage.inventory)==0:
+                        for trashbean in trashbeans[:-1]:
+                            if trashbean.collide_point((mx, my)):
+                                trashbean.scale(BOX_SIZE[0], BOX_SIZE[1])
+                                hold_item = trashbean
+                                old_hi_rect = trashbean.rect
+                                trashbean.rect = hold_item_rect.copy()
+                else:
+                    if hold_item.collide_point((mx, my)):
+                        dragging = True;dragged_object=hold_item
+                        offset_x = (hold_item.rect[0] - mx)
+                        offset_y = (hold_item.rect[1] - my)
+                        break
+                    
                 btn_up.click((mx, my))
                 btn_down.click((mx, my))
-            
+                if hold_item!=None:button_left.click((mx, my))
+
             elif e.type == pygame.MOUSEBUTTONUP:
                 if dragging:
                     dragging = False;dragged_object.is_dragged=False
@@ -212,30 +227,39 @@ def sorting_sceen():
                             if trashbin.collide_object(dragged_object):
                                 if trashbin.is_valid_trash(dragged_object.type):
                                     garbage.pop(dragged_index)
-                                    if len(garbage.inventory)==0:
-                                        state = Scene.HOME
-                                    break
                                 else:
                                     print("wrong")
-                            
-                    dragged_object.back_to_origin()
+                    if isinstance(dragged_object, TrashBin):
+                        if old_hi_rect==None:
+                            raise ValueError("old_hi_rect must have value here")
+                        if old_hi_rect.colliderect(dragged_object.rect):
+                            dragged_object.return_scale()
+                            hold_item = None
+                            dragged_object.rect = old_hi_rect
+                        else:
+                            dragged_object.rect = hold_item_rect.copy()
+                    else:
+                        dragged_object.back_to_origin()
                     
             elif e.type == pygame.MOUSEMOTION:
                 if dragging:
                     mx, my = e.pos
                     dragged_object.replace_pos(mx + offset_x, my + offset_y)
                     
-
     for trashbean in trashbeans:
         trashbean.draw(screen)
-    
+    # if hold_item!=None:
+    #     hold_item.draw(screen)
+        # screen.blit(hold_item.pygame_surface, hold_item_rect)
+        # pass
     if dragging: 
         dragged_object.draw(screen)
         pygame.draw.rect(screen, (0, 0, 0), dragged_object.rect, 2)
     garbage.draw(screen)
-    btn_up.draw(screen)
-    btn_down.draw(screen)
-    toggle_button.draw(screen)
+    if len(garbage.inventory)!=0:
+        btn_up.draw(screen)
+        btn_down.draw(screen)
+
     if hover_name!=None:
         text_surf :pygame.Surface = create_text_box(hover_name, 20, (0,0,0,0.5))
         x = pos[0]-text_surf.width//2
@@ -244,7 +268,9 @@ def sorting_sceen():
         elif x<0:
             x = 0
         screen.blit(text_surf, (pos[0]-text_surf.width//2, pos[1] + 20))
-    
+    if hold_item!=None:
+        name = button_left.draw(screen)
+        if name != None: hover_name=name
     pygame.display.flip()
     
 # endregion
@@ -282,7 +308,7 @@ def home_sceen():
                 button_right.click((mx, my))
                 
                 if next_to_sorting.collide_point((mx,my)):
-                    if len(garbage.inventory)>0:
+                    if len(garbage.inventory)>0 or hold_item!=None:
                         state = Scene.SORTING
                 
                 elif next_to_outside.collide_point((mx,my)):
@@ -308,6 +334,7 @@ def home_sceen():
     if name != None: hover_name=name
     next_to_sorting.draw(screen)
     next_to_outside.draw(screen)
+    if hold_item!=None:hold_item.draw(screen)
     if hover_name!=None:
         # print(hover_name)
         text_surf :pygame.Surface = create_text_box(hover_name, 20, (0,0,0,0.5))
@@ -378,20 +405,30 @@ ctxa = cairo.Context(surface2)
 ctxa.set_source_rgb(0, 1, 0)
 ctxa.arc(widthb/2, heightb/2, heightb//2, 0, 2*3.14159)
 ctxa.fill()
-items = [TrashObject(100,100, surface, "Air", TrashType.OTHERS), TrashObject(100,100,surface2,"Bakteri Starter", TrashType.OTHERS)]
+water = TrashObject(100,100, surface, "Air", TrashType.OTHERS)
+decomp_starter = TrashObject(100,100,surface2,"Bakteri Starter", TrashType.OTHERS)
+items = [water, decomp_starter]
 outside_items = ItemList(items, (SCROLL_POS[0], SCROLL_POS[1]-25), SCROLL_SPACING, 2,BOX_SIZE)
+surface2 = cairo.ImageSurface(cairo.FORMAT_ARGB32, widthb, int(heightb*1.4))
+ctxa = cairo.Context(surface2)
+ctxa.set_source_rgb(0, 1, 0)
+ctxa.paint()
+decompose_bin = TrashObject(350,450, surface2, "Ember Dekompos", TrashType.OTHERS)
+decompose_stack = [decomp_starter, trashbean_organic, water]
+decomp_stack_index = len(decompose_stack)-1
 # endregion
 
 # region Outside Space
 def outside_space():
-    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_index, dragged_object, offset_x, offset_y
-    
+    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_index, dragged_object, offset_x, offset_y, decompose_stack, decomp_stack_index
     screen.blit(current_scene, (0, 0))
     hover_name = None
     pos = pygame.mouse.get_pos()
     for obj in outside_items.get():
         if obj.collide_point(pos):
             hover_name = obj.name
+    if decompose_bin.collide_point(pos):
+        hover_name = decompose_bin.name
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
             state = None
@@ -413,12 +450,23 @@ def outside_space():
             elif e.type == pygame.MOUSEBUTTONUP:
                 if dragging:
                     dragging = False;dragged_object.is_dragged=False
+                    if decompose_bin.collide_object(dragged_object):
+                        if dragged_object is decompose_stack[decomp_stack_index]:
+                            print(dragged_object.name, decompose_stack[decomp_stack_index].name)
+                            decomp_stack_index-=1
+                            if decomp_stack_index<0:
+                                print("yeyeyyey")
+                                decomp_stack_index = len(decompose_stack)-1
+                        else:
+                            print("wrong")
                     dragged_object.back_to_origin()
                 
             elif e.type == pygame.MOUSEMOTION:
                 if dragging:
                     mx, my = e.pos
                     dragged_object.replace_pos(mx + offset_x, my + offset_y)
+                    
+                    
                     
     # transition
     if in_transition:
@@ -442,6 +490,7 @@ def outside_space():
     name = button_left.draw(screen)
     if name != None: hover_name=name
     outside_items.draw(screen)
+    decompose_bin.draw(screen)
     if hover_name!=None:
         # print(hover_name)
         text_surf :pygame.Surface = create_text_box(hover_name, 20, (0,0,0,0.5))
@@ -457,25 +506,29 @@ def outside_space():
     
 if __name__ == "__main__":
     state = Scene.HOME
+    hold_item = None
+    old_hi_rect = None
+    hold_item_rect = pygame.Rect(470, 600, BOX_SIZE[0], BOX_SIZE[1])
     home_callback = create_button_move_scene_call(Scene.WORKING)
-    outside_callback = create_button_move_scene_call(Scene.HOME)
+    callback_to_home = create_button_move_scene_call(Scene.HOME)
     while running:
         dt = clock.tick(60) / 1000
-        # sorting_sceen()
         match state:
             case Scene.HOME:
                 button_right.name = "Pergi ke Ruang Kerajinan"
                 button_right.callback = home_callback
                 home_sceen()
             case Scene.SORTING:
+                button_left.name = "Kembali"
+                button_left.callback = callback_to_home
                 sorting_sceen()
             case Scene.OUTSIDE:
                 button_left.name = "Kembali ke Ruang Pemilahan"
-                button_left.callback = outside_callback
+                button_left.callback = callback_to_home
                 outside_space()
             case Scene.WORKING:
                 button_left.name = "Kembali ke Ruang Pemilahan"
-                button_left.callback = outside_callback
+                button_left.callback = callback_to_home
                 working_space()
             case Scene.TRANSTITION:
                 state = Scene.HOME
