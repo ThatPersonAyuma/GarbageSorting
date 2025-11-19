@@ -100,6 +100,56 @@ ctx.set_source_rgb(1, 1 , 1)
 ctx.rectangle(150, 100, 600, 410)
 ctx.fill()
 
+#==============================
+# gambar luar ruang mesin
+#==============================
+
+# langit biru
+ctx.set_source_rgb(0.53, 0.81, 0.92)
+ctx.rectangle(155, 105, 600, 270)
+ctx.fill()
+
+# awan putih
+ctx.set_source_rgb(1, 1, 1) 
+ctx.arc(300, 150, 30, 0, 2 * math.pi)
+ctx.arc(330, 150, 40, 0, 2 * math.pi)
+ctx.arc(370, 150, 30, 0, 2 * math.pi)
+ctx.arc(340, 130, 35, 0, 2 * math.pi)
+ctx.fill()
+
+# awan putih2
+ctx.set_source_rgb(1, 1, 1)
+ctx.arc(500, 200, 25, 0, 2 * math.pi)
+ctx.arc(530, 200, 35, 0, 2 * math.pi)
+ctx.arc(570, 200, 25, 0, 2 * math.pi)
+ctx.arc(540, 180, 30, 0, 2 * math.pi)
+ctx.fill()
+
+#kotak rumput
+ctx.set_source_rgb(0.3, 0.7, 0.3)
+ctx.rectangle(155, 375, 600, 140)
+ctx.fill()
+
+#loop rumput
+ctx.set_source_rgb(0, 0.5, 0)
+for i in range(12):
+    x = 160 + i * 50
+    ctx.move_to(x, 505)
+    ctx.line_to(x + 5, 485)
+    ctx.line_to(x + 15, 505)
+    ctx.fill()
+
+# loop rumput2
+ctx.set_source_rgb(0, 0.6, 0)
+for i in range(12):
+    x = 185 + i * 50
+    ctx.move_to(x, 475)
+    ctx.line_to(x + 5, 490)
+    ctx.line_to(x + 15, 490)
+    ctx.fill()
+
+#==============================
+
 # kotak garasi atas
 ctx.set_source_rgb(0.5, 0.5, 0.5)
 ctx.rectangle(150, 30, 600, 80)
