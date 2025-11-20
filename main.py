@@ -4,10 +4,13 @@ import component.button as button
 from component import *
 import numpy as np
 from enum import Enum
+from pathlib import Path
 
 from component.item_list import ItemList
 from component.objects import ImageObject, TrashObject, TrashType, TrashBin
 from component.text_area import create_text_box
+
+from scenes import IndustryRoom, outdoor, PickUpGarage, TrashTruck
 
 
 pygame.init()
@@ -20,7 +23,7 @@ class Scene(Enum):
     WORKING = 3
     TRANSTITION = -1
 
-WIDTH, HEIGHT = 1024, 768
+WIDTH, HEIGHT = 1225, 689
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 SCROLL_POS = (int(WIDTH*(17/20)),120)
@@ -87,13 +90,15 @@ ctxa = cairo.Context(surface2)
 ctxa.set_source_rgb(0, 1, 0)
 ctxa.arc(widthb/2, heightb/2, heightb//2, 0, 2*3.14159)
 ctxa.fill()
-items = [TrashObject(100,100, surface, "botol", TrashType.ORGANIC), TrashObject(100,100,surface2,"Yam-Yam", TrashType.PLASTIC), TrashObject(100,100,surface,"3", TrashType.ORGANIC),
-        TrashObject(100,100,surface2,"4", TrashType.OTHERS), TrashObject(100,100,surface,"5", TrashType.OTHERS), TrashObject(100,100,surface2,"6", TrashType.ORGANIC)]
+items = [TrashObject(100,100, surface, "botol", TrashType.ORGANIC)]
+# items = [TrashObject(100,100, surface, "botol", TrashType.ORGANIC), TrashObject(100,100,surface2,"Yam-Yam", TrashType.PLASTIC), TrashObject(100,100,surface,"3", TrashType.ORGANIC),
+#         TrashObject(100,100,surface2,"4", TrashType.OTHERS), TrashObject(100,100,surface,"5", TrashType.OTHERS), TrashObject(100,100,surface2,"6", TrashType.ORGANIC)]
 garbage = ItemList(items, start_pos=SCROLL_POS, spacing=SCROLL_SPACING, max_show=5, box_size=BOX_SIZE)  # tampil maksimal 3 item
 # endregion
 
 # region TrashBin
 width, height = 100, 160
+spacing = BOX_SIZE[0]+10
 trash_bin = (170, 500)
 surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
 ctx = cairo.Context(surface)
@@ -104,12 +109,12 @@ surface1 = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
 ctx1 = cairo.Context(surface1)
 ctx1.set_source_rgb(0,1,0)
 ctx1.paint()
-trashbean_organic = TrashBin(trash_bin[0]+130, trash_bin[1], surface1, TrashType.ORGANIC, "Tempat Sampah Organik")
+trashbean_organic = TrashBin(trash_bin[0]+width+spacing, trash_bin[1], surface1, TrashType.ORGANIC, "Tempat Sampah Organik")
 surface2 = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
 ctx2 = cairo.Context(surface2)
 ctx2.set_source_rgb(190/255, 190/255, 190/255)
 ctx2.paint()
-trashbean_other = TrashBin(trash_bin[0]+260, trash_bin[1], surface2, TrashType.OTHERS, "Tempat Sampah Lainnya")
+trashbean_other = TrashBin(trash_bin[0]+2*(width+spacing), trash_bin[1], surface2, TrashType.OTHERS, "Tempat Sampah Lainnya")
 trashbeans = [trashbean_plastic, trashbean_organic, trashbean_other]
 # endregion
 
@@ -174,7 +179,7 @@ def create_wipe_mask(progress, direction):
 # region Sorting Scene
 dragged_object:objects.TrashObject
 dragged_index:int
-def sorting_sceen():
+def sorting_space():
     global dragged_index, trashbeans, state, current_scene, dt, garbage, dragging, dragged_object, offset_x, offset_y, direction, next_scene, hold_item, old_hi_rect
     screen.blit(current_scene, (0, 0))
     
@@ -248,9 +253,9 @@ def sorting_sceen():
                     
     for trashbean in trashbeans:
         trashbean.draw(screen)
-    # if hold_item!=None:
-    #     hold_item.draw(screen)
-        # screen.blit(hold_item.pygame_surface, hold_item_rect)
+    if hold_item!=None:
+        hold_item.draw(screen)
+        screen.blit(hold_item.pygame_surface, hold_item.rect)
         # pass
     if dragging: 
         dragged_object.draw(screen)
@@ -281,15 +286,12 @@ ctx = cairo.Context(surface)
 ctx.set_source_rgb(1,1,0)
 ctx.paint()
 next_to_sorting = ImageObject(200,400,surface,"Pilah Sampah")
-surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-ctx = cairo.Context(surface)
-ctx.set_source_rgb(0,1,0)
-ctx.paint()
-next_to_outside = ImageObject(750,250,surface,"Pergi ke Luar")
+surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 250, 310)
+next_to_outside = ImageObject(855,200,surface,"Pergi ke Luar")
 # endregion
 
 # region Home Space
-def home_sceen():
+def home_space():
     global  dt, state, screen,current_scene, in_transition, progress
     screen.blit(current_scene, (0, 0))
     hover_name = None
@@ -313,6 +315,7 @@ def home_sceen():
                 
                 elif next_to_outside.collide_point((mx,my)):
                     state = Scene.OUTSIDE
+                    callback_to_outside()
                 
     # transition
     if in_transition:
@@ -330,6 +333,10 @@ def home_sceen():
             in_transition = False
             
     # draw_buttons()
+    if hold_item != None:
+        hold_item.draw(screen)
+        if hold_item.collide_point(pos):
+            hover_name = hold_item.name
     name = button_right.draw(screen)
     if name != None: hover_name=name
     next_to_sorting.draw(screen)
@@ -349,14 +356,32 @@ def home_sceen():
 # endregion
     
 
-    
+
+# region Working Components
+width, height = 100, 160
+trash_bin = (370, 300)
+spacing = BOX_SIZE[0]+5
+surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+ctx = cairo.Context(surface)
+ctx.set_source_rgb(1,0,0)
+ctx.paint()
+shredder = TrashBin(trash_bin[0], trash_bin[1], surface, TrashType.OBJECT, "Pencacah Plastik")
+furnace = TrashBin(trash_bin[0]+width+spacing, trash_bin[1], surface, TrashType.OBJECT, "Mesin Peleleh Plastik")
+presser = TrashBin(trash_bin[0]+2*(width+spacing), trash_bin[1], surface, TrashType.OBJECT, "Mesin Penekan")
+# endregion
     
 # region Working Space
 def working_space():
-    global  dt, state, screen,current_scene, in_transition, progress
+    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_object, offset_x, offset_y, hold_item
     screen.blit(current_scene, (0, 0))
     pos = pygame.mouse.get_pos()
     hover_name = None
+    if furnace.collide_point(pos):
+        hover_name = furnace.name
+    if shredder.collide_point(pos):
+        hover_name = shredder.name
+    if presser.collide_point(pos):
+        hover_name = presser.name
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
             state = None
@@ -364,6 +389,26 @@ def working_space():
             if e.type == pygame.MOUSEBUTTONDOWN:
                 mx, my = e.pos
                 button_left.click((mx, my))
+                if hold_item != None:
+                    if hold_item.collide_point((mx, my)):
+                        dragging = True;dragged_object=hold_item
+                        offset_x = (hold_item.rect[0] - mx)
+                        offset_y = (hold_item.rect[1] - my)
+                        break
+            elif e.type == pygame.MOUSEBUTTONUP:
+                if dragging:
+                    dragging = False;dragged_object.is_dragged=False
+                    if isinstance(dragged_object, TrashBin):
+                        if old_hi_rect==None:
+                            raise ValueError("old_hi_rect must have value here")
+                        dragged_object.rect = hold_item_rect.copy()
+                    else:
+                        dragged_object.back_to_origin()
+                    
+            elif e.type == pygame.MOUSEMOTION:
+                if dragging:
+                    mx, my = e.pos
+                    dragged_object.replace_pos(mx + offset_x, my + offset_y)
                 
     if in_transition:
         progress += dt * 1.2
@@ -381,6 +426,16 @@ def working_space():
             
     name = button_left.draw(screen)
     if name != None: hover_name=name
+    furnace.draw(screen)
+    shredder.draw(screen)
+    presser.draw(screen)
+    if dragging: 
+        dragged_object.draw(screen)
+        pygame.draw.rect(screen, (0, 0, 0), dragged_object.rect, 2)
+    if hold_item != None:
+        hold_item.draw(screen)
+        if hold_item.collide_point(pos):
+            hover_name = hold_item.name
     if hover_name!=None:
         # print(hover_name)
         text_surf :pygame.Surface = create_text_box(hover_name, 20, (0,0,0,0.5))
@@ -420,7 +475,7 @@ decomp_stack_index = len(decompose_stack)-1
 
 # region Outside Space
 def outside_space():
-    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_index, dragged_object, offset_x, offset_y, decompose_stack, decomp_stack_index
+    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_index, dragged_object, offset_x, offset_y, decompose_stack, decomp_stack_index, hold_item
     screen.blit(current_scene, (0, 0))
     hover_name = None
     pos = pygame.mouse.get_pos()
@@ -446,6 +501,12 @@ def outside_space():
                         break
                 btn_up.click((mx, my))
                 btn_down.click((mx, my))
+                if hold_item != None:
+                    if hold_item.collide_point((mx, my)):
+                        dragging = True;dragged_object=hold_item
+                        offset_x = (hold_item.rect[0] - mx)
+                        offset_y = (hold_item.rect[1] - my)
+                        break
             
             elif e.type == pygame.MOUSEBUTTONUP:
                 if dragging:
@@ -458,15 +519,18 @@ def outside_space():
                                 print("yeyeyyey")
                                 decomp_stack_index = len(decompose_stack)-1
                         else:
-                            print("wrong")
-                    dragged_object.back_to_origin()
+                            print("wrong", dragged_object)
+                    if isinstance(dragged_object, TrashBin):
+                        if old_hi_rect==None:
+                            raise ValueError("old_hi_rect must have value here")
+                        dragged_object.rect = hold_item_rect.copy()
+                    else:
+                        dragged_object.back_to_origin()
                 
             elif e.type == pygame.MOUSEMOTION:
                 if dragging:
                     mx, my = e.pos
                     dragged_object.replace_pos(mx + offset_x, my + offset_y)
-                    
-                    
                     
     # transition
     if in_transition:
@@ -486,7 +550,10 @@ def outside_space():
     if dragging: 
         dragged_object.draw(screen)
         pygame.draw.rect(screen, (0, 0, 0), dragged_object.rect, 2)
-        
+    if hold_item != None:
+        hold_item.draw(screen)
+        if hold_item.collide_point(pos):
+            hover_name = hold_item.name
     name = button_left.draw(screen)
     if name != None: hover_name=name
     outside_items.draw(screen)
@@ -508,25 +575,42 @@ if __name__ == "__main__":
     state = Scene.HOME
     hold_item = None
     old_hi_rect = None
-    hold_item_rect = pygame.Rect(470, 600, BOX_SIZE[0], BOX_SIZE[1])
-    home_callback = create_button_move_scene_call(Scene.WORKING)
+    hold_item_rect = pygame.Rect(640, 530, BOX_SIZE[0], BOX_SIZE[1])
+    callback_to_working = create_button_move_scene_call(Scene.WORKING)
     callback_to_home = create_button_move_scene_call(Scene.HOME)
+    callback_to_outside = create_button_move_scene_call(Scene.OUTSIDE)
+    working_scene = convert.convert_cairo_to_pygame_surf(IndustryRoom.create())
+    outside_sceen = convert.convert_cairo_to_pygame_surf(outdoor.create())
+    home_scene_bg = convert.convert_cairo_to_pygame_surf(PickUpGarage.create())
+    pickup_truck = convert.convert_cairo_to_pygame_surf(TrashTruck.create())
+    current_scene = home_scene_bg
+    # Folder tempat asset
+    ASSET_DIR = Path(__file__).parent / "assets"
+    print(ASSET_DIR)
+
+    # Load musik
+    pygame.mixer.music.load(ASSET_DIR / "bg.mp3")
+    pygame.mixer.init() 
+    pygame.mixer.music.play(-1) 
     while running:
         dt = clock.tick(60) / 1000
         match state:
             case Scene.HOME:
+                next_scene = home_scene_bg
                 button_right.name = "Pergi ke Ruang Kerajinan"
-                button_right.callback = home_callback
-                home_sceen()
+                button_right.callback = callback_to_working
+                home_space()
             case Scene.SORTING:
                 button_left.name = "Kembali"
                 button_left.callback = callback_to_home
-                sorting_sceen()
+                sorting_space()
             case Scene.OUTSIDE:
+                next_scene = outside_sceen
                 button_left.name = "Kembali ke Ruang Pemilahan"
                 button_left.callback = callback_to_home
                 outside_space()
             case Scene.WORKING:
+                next_scene = working_scene
                 button_left.name = "Kembali ke Ruang Pemilahan"
                 button_left.callback = callback_to_home
                 working_space()

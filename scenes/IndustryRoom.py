@@ -1,11 +1,17 @@
 import cairo
 import math
 
-def create():
+def create()->cairo.ImageSurface:
     # Buat surface dan context
     width, height = 1225, 689
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     ctx = cairo.Context(surface)
+
+    # scale
+    # sx = wt / width
+    # sy = ht / height
+        
+    # ctx.scale(sx, sy)
 
     # Background putih
     ctx.set_source_rgb(1, 1, 1)
@@ -148,4 +154,5 @@ def create():
 
 
     # Simpan
-    surface.write_to_png("Industry_Room.png")
+    # surface.write_to_png("nyoba2.png")
+    return surface
