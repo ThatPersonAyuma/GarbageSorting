@@ -180,7 +180,7 @@ def create_wipe_mask(progress, direction):
 dragged_object:objects.TrashObject
 dragged_index:int
 def sorting_space():
-    global dragged_index, trashbeans, state, current_scene, dt, garbage, dragging, dragged_object, offset_x, offset_y, direction, next_scene, hold_item, old_hi_rect
+    global dragged_index, trashbeans, state, current_scene, dt, garbage, dragging, dragged_object, offset_x, offset_y, direction, next_scene, hold_item, old_hi_rect, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, decomp_stack_index
     screen.blit(current_scene, (0, 0))
     
     pos=pygame.mouse.get_pos()
@@ -250,6 +250,35 @@ def sorting_space():
                 if dragging:
                     mx, my = e.pos
                     dragged_object.replace_pos(mx + offset_x, my + offset_y)
+        if e.type == TIMER_EVENT:
+            if shredder_running:
+                if shredder_timer > 0: 
+                    shredder_timer -= 1
+                else:
+                    shredder_running = False
+                    shredder_has_item = False
+                    shredder_bucket_has_item = True
+                    # Logic
+            if furnace_running:
+                if furnace_timer > 0: 
+                    furnace_timer -= 1
+                else:
+                    furnace_running = False
+                    furnace_has_item = False
+                    paving_mold_has_item = True
+            if presser_running:
+                if presser_timer > 0: 
+                    presser_timer -= 1
+                else:
+                    presser_running = False
+                    presser_has_item = False
+            if decomposer_running:
+                if decomposer_timer > 0:
+                    decomposer_timer -= 1
+                else:
+                    decomposer_running = False
+                    decomp_stack_index = len(decompose_stack)-1
+                    # Logic
                     
     for trashbean in trashbeans:
         trashbean.draw(screen)
@@ -292,7 +321,7 @@ next_to_outside = ImageObject(855,200,surface,"Pergi ke Luar")
 
 # region Home Space
 def home_space():
-    global  dt, state, screen,current_scene, in_transition, progress
+    global  dt, state, screen,current_scene, in_transition, progress, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, decomp_stack_index
     screen.blit(current_scene, (0, 0))
     hover_name = None
     pos = pygame.mouse.get_pos()
@@ -316,6 +345,35 @@ def home_space():
                 elif next_to_outside.collide_point((mx,my)):
                     state = Scene.OUTSIDE
                     callback_to_outside()
+                    
+        if e.type == TIMER_EVENT:
+            if shredder_running:
+                if shredder_timer > 0: 
+                    shredder_timer -= 1
+                else:
+                    shredder_running = False
+                    shredder_has_item = False
+                    shredder_bucket_has_item = True
+                    # Logic
+            if furnace_running:
+                if furnace_timer > 0: 
+                    furnace_timer -= 1
+                else:
+                    furnace_running = False
+                    furnace_has_item = False
+                    paving_mold_has_item = True
+            if presser_running:
+                if presser_timer > 0: 
+                    presser_timer -= 1
+                else:
+                    presser_running = False
+                    presser_has_item = False
+            if decomposer_running:
+                if decomposer_timer > 0:
+                    decomposer_timer -= 1
+                else:
+                    decomposer_running = False
+                    decomp_stack_index = len(decompose_stack)-1
                 
     # transition
     if in_transition:
@@ -368,20 +426,49 @@ ctx.paint()
 shredder = TrashBin(trash_bin[0], trash_bin[1], surface, TrashType.OBJECT, "Pencacah Plastik")
 furnace = TrashBin(trash_bin[0]+width+spacing, trash_bin[1], surface, TrashType.OBJECT, "Mesin Peleleh Plastik")
 presser = TrashBin(trash_bin[0]+2*(width+spacing), trash_bin[1], surface, TrashType.OBJECT, "Mesin Penekan")
+surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width*0.7), int(height*0.3))
+ctx = cairo.Context(surface)
+ctx.set_source_rgb(0.5,0.5,0)
+shredder_bucket = TrashObject(shredder.rect.x + int(width*0.15), shredder.rect.y+shredder.rect.height-surface.get_height(), surface, "Bak Penampung Cacahan", TrashType.OBJECT)
+paving_mold = TrashObject(furnace.rect.x+int(width*0.15), furnace.rect.y+furnace.rect.height-surface.get_height(), surface, "Cetakan Paving", TrashType.OBJECT)
+mold_hold_rect = pygame.Rect(presser.rect.x+int(width*0.15), presser.rect.y+(presser.rect.height-surface.get_height())*2/3, surface.get_width(), surface.get_height())
+# endregion
+    
+# region Working Logic
+def create_time_text(time:int)->str:
+    return str(time)+" detik"
+    
+SHREDDER_TIME = 30
+FURNACE_TIME = 45
+PRESSER_TIME = 30
+shredder_timer:int = 0
+furnace_timer:int = 0
+presser_timer:int = 0
+shredder_running=False
+furnace_running=False
+presser_running=False 
+TIMER_EVENT = pygame.USEREVENT + 1
+pygame.time.set_timer(TIMER_EVENT, 1000)
+shredder_has_item = False
+furnace_has_item = False
+presser_has_item = False
+shredder_bucket_has_item = False
+paving_mold_has_item = False
 # endregion
     
 # region Working Space
 def working_space():
-    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_object, offset_x, offset_y, hold_item
+    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_object, offset_x, offset_y, hold_item, mold_hold_rect, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, decomp_stack_index
     screen.blit(current_scene, (0, 0))
     pos = pygame.mouse.get_pos()
     hover_name = None
     if furnace.collide_point(pos):
         hover_name = furnace.name
-    if shredder.collide_point(pos):
+    elif shredder.collide_point(pos):
         hover_name = shredder.name
-    if presser.collide_point(pos):
+    elif presser.collide_point(pos):
         hover_name = presser.name
+    
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
             state = None
@@ -394,22 +481,80 @@ def working_space():
                         dragging = True;dragged_object=hold_item
                         offset_x = (hold_item.rect[0] - mx)
                         offset_y = (hold_item.rect[1] - my)
-                        break
+                if not shredder_running and shredder_bucket.collide_point((mx, my)):
+                    dragging = True;dragged_object=shredder_bucket
+                    offset_x = (shredder_bucket.rect[0] - mx)
+                    offset_y = (shredder_bucket.rect[1] - my)
+                elif not furnace_running and not presser_running and paving_mold.collide_point((mx, my)):
+                    dragging = True;dragged_object=paving_mold
+                    offset_x = (paving_mold.rect[0] - mx)
+                    offset_y = (paving_mold.rect[1] - my)
+                elif shredder_has_item and not shredder_bucket_has_item and not shredder_running and shredder.collide_point((mx, my)):
+                    shredder_running = True; shredder_timer = SHREDDER_TIME
+                elif furnace_has_item and not furnace_running and not paving_mold_has_item and not presser_has_item and furnace.collide_point((mx, my)):
+                    furnace_running = True; furnace_timer = FURNACE_TIME
+                elif presser_has_item and not presser_running and paving_mold_has_item and presser.collide_point((mx, my)):
+                    presser_running = True; presser_timer = PRESSER_TIME
+                    
             elif e.type == pygame.MOUSEBUTTONUP:
                 if dragging:
                     dragging = False;dragged_object.is_dragged=False
-                    if isinstance(dragged_object, TrashBin):
-                        if old_hi_rect==None:
-                            raise ValueError("old_hi_rect must have value here")
+                    if dragged_object is hold_item:
+                        if dragged_object is trashbean_plastic and not shredder_has_item and not shredder_running  and shredder.collide_object(dragged_object):
+                            shredder_has_item = True
+                            print("Taruh sampah plastik di shredder")
                         dragged_object.rect = hold_item_rect.copy()
-                    else:
+                    elif dragged_object is shredder_bucket:
+                        if shredder_bucket_has_item and not furnace_running and not furnace_has_item and furnace.collide_object(dragged_object):
+                            furnace_has_item = True
+                            shredder_bucket_has_item = False
+                            print("shradded telah ditamabahkan ke furnace")
+                        dragged_object.back_to_origin()
+                    elif dragged_object is paving_mold:
+                        if paving_mold_has_item:
+                            if presser.collide_object(dragged_object):
+                                dragged_object.origin, mold_hold_rect = mold_hold_rect, dragged_object.origin
+                                presser_has_item = True
+                        else:
+                            if not paving_mold_has_item and presser_has_item and furnace.collide_object(dragged_object):
+                                dragged_object.origin, mold_hold_rect = mold_hold_rect, dragged_object.origin
+                                presser_has_item = False
                         dragged_object.back_to_origin()
                     
             elif e.type == pygame.MOUSEMOTION:
                 if dragging:
                     mx, my = e.pos
                     dragged_object.replace_pos(mx + offset_x, my + offset_y)
-                
+            
+        if e.type == TIMER_EVENT:
+            if shredder_running:
+                if shredder_timer > 0: 
+                    shredder_timer -= 1
+                else:
+                    shredder_running = False
+                    shredder_has_item = False
+                    shredder_bucket_has_item = True
+                    # Logic
+            if furnace_running:
+                if furnace_timer > 0: 
+                    furnace_timer -= 1
+                else:
+                    furnace_running = False
+                    furnace_has_item = False
+                    paving_mold_has_item = True
+            if presser_running:
+                if presser_timer > 0: 
+                    presser_timer -= 1
+                else:
+                    presser_running = False
+                    paving_mold_has_item = False
+            if decomposer_running:
+                if decomposer_timer > 0:
+                    decomposer_timer -= 1
+                else:
+                    decomposer_running = False
+                    decomp_stack_index = len(decompose_stack)-1
+            
     if in_transition:
         progress += dt * 1.2
         progress = min(progress, 1)
@@ -426,9 +571,15 @@ def working_space():
             
     name = button_left.draw(screen)
     if name != None: hover_name=name
+    if shredder_bucket.collide_point(pos):
+        hover_name = shredder_bucket.name
+    elif paving_mold.collide_point(pos):
+        hover_name = paving_mold.name
     furnace.draw(screen)
     shredder.draw(screen)
     presser.draw(screen)
+    shredder_bucket.draw(screen)
+    paving_mold.draw(screen)
     if dragging: 
         dragged_object.draw(screen)
         pygame.draw.rect(screen, (0, 0, 0), dragged_object.rect, 2)
@@ -445,6 +596,9 @@ def working_space():
         elif x<0:
             x = 0
         screen.blit(text_surf, (x, pos[1] + 20))
+    if shredder_timer>0:screen.blit(create_text_box(create_time_text(shredder_timer), 20, (0,0,0,0.5)), shredder.rect.topleft)
+    if furnace_timer>0:screen.blit(create_text_box(create_time_text(furnace_timer), 20, (0,0,0,0.5)), furnace.rect.topleft)
+    if presser_timer>0:screen.blit(create_text_box(create_time_text(presser_timer), 20, (0,0,0,0.5)), presser.rect.topleft)
     pygame.display.flip()
 # endregion
 
@@ -471,11 +625,16 @@ ctxa.paint()
 decompose_bin = TrashObject(350,450, surface2, "Ember Dekompos", TrashType.OTHERS)
 decompose_stack = [decomp_starter, trashbean_organic, water]
 decomp_stack_index = len(decompose_stack)-1
+DECOMPOSER_TIME = 60 
+decomposer_timer = 0 
+decomposer_running = False
+def fertilizer_created():
+    pass
 # endregion
 
 # region Outside Space
 def outside_space():
-    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_index, dragged_object, offset_x, offset_y, decompose_stack, decomp_stack_index, hold_item
+    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_index, dragged_object, offset_x, offset_y, decompose_stack, decomp_stack_index, hold_item, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer
     screen.blit(current_scene, (0, 0))
     hover_name = None
     pos = pygame.mouse.get_pos()
@@ -512,12 +671,13 @@ def outside_space():
                 if dragging:
                     dragging = False;dragged_object.is_dragged=False
                     if decompose_bin.collide_object(dragged_object):
-                        if dragged_object is decompose_stack[decomp_stack_index]:
+                        if decomp_stack_index >= 0 and dragged_object is decompose_stack[decomp_stack_index]:
                             print(dragged_object.name, decompose_stack[decomp_stack_index].name)
                             decomp_stack_index-=1
                             if decomp_stack_index<0:
                                 print("yeyeyyey")
-                                decomp_stack_index = len(decompose_stack)-1
+                                decomposer_timer = DECOMPOSER_TIME
+                                decomposer_running = True
                         else:
                             print("wrong", dragged_object)
                     if isinstance(dragged_object, TrashBin):
@@ -532,6 +692,35 @@ def outside_space():
                     mx, my = e.pos
                     dragged_object.replace_pos(mx + offset_x, my + offset_y)
                     
+        if e.type == TIMER_EVENT:
+            if shredder_running:
+                if shredder_timer > 0: 
+                    shredder_timer -= 1
+                else:
+                    shredder_running = False
+                    shredder_has_item = False
+                    shredder_bucket_has_item = True
+                    # Logic
+            if furnace_running:
+                if furnace_timer > 0: 
+                    furnace_timer -= 1
+                else:
+                    furnace_running = False
+                    furnace_has_item = False
+                    paving_mold_has_item = True
+            if presser_running:
+                if presser_timer > 0: 
+                    presser_timer -= 1
+                else:
+                    presser_running = False
+                    presser_has_item = False
+            if decomposer_running:
+                if decomposer_timer > 0:
+                    decomposer_timer -= 1
+                else:
+                    decomposer_running = False
+                    decomp_stack_index = len(decompose_stack)-1
+                    # Logic
     # transition
     if in_transition:
         progress += dt * 1.2
@@ -567,7 +756,7 @@ def outside_space():
         elif x<0:
             x = 0
         screen.blit(text_surf, (x, pos[1] + 20))
-        
+    if decomposer_timer>0:screen.blit(create_text_box(create_time_text(decomposer_timer), 20, (0,0,0,0.5)), decompose_bin.rect.topleft)
     pygame.display.flip()
 # endregion
     
@@ -586,12 +775,11 @@ if __name__ == "__main__":
     current_scene = home_scene_bg
     # Folder tempat asset
     ASSET_DIR = Path(__file__).parent / "assets"
-    print(ASSET_DIR)
 
     # Load musik
     pygame.mixer.music.load(ASSET_DIR / "bg.mp3")
-    pygame.mixer.init() 
-    pygame.mixer.music.play(-1) 
+    pygame.mixer.init()
+    pygame.mixer.music.play(-1)
     while running:
         dt = clock.tick(60) / 1000
         match state:

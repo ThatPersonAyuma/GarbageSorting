@@ -1,3 +1,4 @@
+from pathlib import Path
 import cairo
 import math
 
@@ -152,7 +153,17 @@ def create()->cairo.ImageSurface:
     ctx.close_path()
     ctx.fill()
 
+    # Poster
+    ASSET_DIR = Path(__file__).parent.parent / "assets"
+    img = cairo.ImageSurface.create_from_png(ASSET_DIR / "poster.png")
 
+    # Gambar image pada surface kamu
+    ctx.translate(60+((120/img.get_width())*img.get_width())//2, 220-(90/img.get_height())*img.get_height())
+    ctx.scale(120/img.get_width(), 120/img.get_height())
+    
+    ctx.set_source_surface(img, 0, 0)
+    ctx.paint()
+    
     # Simpan
     # surface.write_to_png("nyoba2.png")
     return surface

@@ -11,7 +11,7 @@ class ImageObject:
         self.pygame_surface: pygame.Surface = convert.convert_cairo_to_pygame_surf(surface)
         # rect untuk posisi dan collide area
         self.rect:pygame.Rect = self.pygame_surface.get_rect(topleft=(x, y))
-        self.origin = self.rect.topleft
+        self.origin:pygame.Rect = self.rect.copy()
         self.name = name
         # self.old_rect = None
 
@@ -24,8 +24,8 @@ class ImageObject:
         self.rect.y = y
 
     def back_to_origin(self):
-        self.rect.x = self.origin[0]
-        self.rect.y = self.origin[1]
+        self.rect.x = self.origin.x
+        self.rect.y = self.origin.y
     
     def collide_point(self, pos):
         """Cek tabrakan dengan posisi mouse atau koordinat tertentu"""
