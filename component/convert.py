@@ -17,7 +17,7 @@ def convert_cairo_to_pygame_surf(surface: cairo.ImageSurface) -> pygame.Surface:
     arr = np.frombuffer(data, dtype=np.uint8)  # jadi array 1D
     arr = arr.reshape((surface.get_height(), surface.get_width(), 4))  # Pycairo ARGB32 = 4 channel
 
-    # ARGB ke RGBA (Pygame pakai RGBA)
+    # ARGB ke BGRA (Pygame pakai RGBA, tetapi karena little endian, kita blik urutannya)
     arr = arr[:, :, [2, 1, 0, 3]]
 
     # Buat Pygame surface

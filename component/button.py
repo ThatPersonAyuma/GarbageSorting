@@ -97,7 +97,7 @@ class Button():
             self.callback()
             
     @staticmethod
-    def create_up_down_button(x1:int, y1:int, x2, y2, w:int, h:int, callback_up:function, callback_down:function):
+    def create_up_down_button(x1:int, y1:int, x2, y2, w:int, h:int, callback_up, callback_down):
         """
         direction: 'up' or 'down'
         """
