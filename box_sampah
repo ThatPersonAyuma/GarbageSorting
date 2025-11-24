@@ -1,0 +1,298 @@
+import cairo
+import math
+
+W, H = 1599, 899
+surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
+ctx = cairo.Context(surface)
+
+def c(r,g,b): return (r/255.0, g/255.0, b/255.0)
+
+#background
+ctx.set_source_rgb(*c(209, 211, 214))
+ctx.rectangle(0, 0, W, H)
+ctx.fill()
+
+floor_y = int(H * 0.6)
+ctx.set_source_rgb(*c(141, 141, 144))
+ctx.rectangle(0, floor_y, W, H - floor_y)
+ctx.fill()
+
+#box
+bin_w = 400
+bin_h = 500
+top_margin = 80
+gap = 120
+
+start_x = (W - (3*bin_w + 2*gap)) // 2
+xs = [start_x + i*(bin_w+gap) for i in range(3)]
+y = top_margin
+
+def rounded_rect(x, y, w, h, r):
+    ctx.new_sub_path()
+    ctx.arc(x + w - r, y + r, r, -math.pi/2, 0)
+    ctx.arc(x + w - r, y + h - r, r, 0, math.pi/2)
+    ctx.arc(x + r, y + h - r, r, math.pi/2, math.pi)
+    ctx.arc(x + r, y + r, r, math.pi, 3*math.pi/2)
+    ctx.close_path()
+
+def draw_bin(cx, cy, w, h, color_rgb):
+    lid_h = int(h * 0.20)
+    lid_x = cx
+    lid_y = cy
+    lid_r = 26
+    ctx.set_source_rgb(*color_rgb)
+    rounded_rect(lid_x, lid_y, w, lid_h, lid_r)
+    ctx.fill()
+
+    ctx.set_source_rgba(0,0,0,0.12)
+    shadow_bar_h = int(lid_h * 0.28)
+    ctx.rectangle(lid_x + 10, lid_y + lid_h - shadow_bar_h//2, w - 20, shadow_bar_h)
+    ctx.fill()
+
+    body_top_y = lid_y + lid_h
+    bottom_shrink = 34
+    left_top = (lid_x + 10, body_top_y)
+    right_top = (lid_x + w - 10, body_top_y)
+    left_bottom = (lid_x + 10 + bottom_shrink, lid_y + h)
+    right_bottom = (lid_x + w - 10 - bottom_shrink, lid_y + h)
+
+    ctx.new_path()
+    ctx.move_to(*left_top)
+    ctx.curve_to(lid_x + 10, body_top_y + h*0.15, lid_x + 10 + 5, body_top_y + h*0.6, *left_bottom)
+    ctx.line_to(right_bottom[0], right_bottom[1])
+    ctx.curve_to(lid_x + w - 15, body_top_y + h*0.6, lid_x + w - 15, body_top_y + h*0.15, *right_top)
+    ctx.close_path()
+    ctx.set_source_rgb(*color_rgb)
+    ctx.fill()
+
+# logo box organik
+def draw_organic_logo(ctx, scale=1.5, add_circle=True, circle_fill_color=None):
+    if add_circle:
+        circle_radius = 50 * scale 
+        
+        #lingkaran hijau
+        ctx.set_source_rgb(*c(0, 100, 40)) 
+        ctx.set_line_width(4) 
+        ctx.arc(0, 0, circle_radius, 0, 2 * math.pi)
+        ctx.stroke_preserve() 
+        
+        if circle_fill_color:
+            ctx.set_source_rgb(*circle_fill_color)
+        else: # Default jika tidak ada warna yang diberikan
+            ctx.set_source_rgb(*c(0, 138, 57)) 
+        ctx.fill()
+        
+        #warna daun dan garis
+        ctx.set_source_rgb(*c(0, 100, 40)) # Hijau gelap untuk daun
+        ctx.set_line_width(4) 
+    else:
+        ctx.set_source_rgb(*c(0, 138, 57)) 
+        ctx.set_line_width(8) 
+
+    # Batang daun
+    ctx.move_to(0, 20 * scale)
+    ctx.curve_to(5 * scale, 10 * scale, 10 * scale, 0, 0, -20 * scale)
+    ctx.stroke()
+
+    #daun
+    ctx.move_to(-25 * scale, 5 * scale)
+    ctx.curve_to(-15 * scale, -15 * scale, 15 * scale, -15 * scale, 25 * scale, 5 * scale)
+    ctx.curve_to(15 * scale, 15 * scale, -15 * scale, 15 * scale, -25 * scale, 5 * scale)
+    ctx.close_path()
+    ctx.fill_preserve() 
+    ctx.set_source_rgb(*c(0, 100, 40)) 
+    ctx.stroke()
+
+    #detail daun
+    ctx.move_to(-15 * scale, 0)
+    ctx.line_to(15 * scale, 0)
+    ctx.set_source_rgb(*c(0, 80, 30)) 
+    ctx.set_line_width(1)
+    ctx.stroke()
+    ctx.set_line_width(4) 
+
+# logo box plastik
+def draw_realistic_bottle_logo(ctx, scale=1.0):
+    #lingkaran putih
+    circle_radius = 60 * scale
+    ctx.set_source_rgb(*c(255, 255, 255))
+    ctx.set_line_width(4 * scale)
+    ctx.arc(0, 0, circle_radius, 0, 2 * math.pi)
+    ctx.stroke_preserve()
+    ctx.set_source_rgb(*c(0, 138, 57)) # Isi lingkaran dengan warna hijau
+    ctx.fill()
+
+    #warna botol
+    bottle_color_body = c(100, 180, 255) 
+    bottle_color_cap = c(0, 100, 200) 
+
+    #botol
+    body_width = 45 * scale
+    body_height = 80 * scale
+    neck_width = 15 * scale
+    neck_height = 20 * scale
+    cap_height = 10 * scale
+    cap_top_width = 20 * scale
+
+    base_y = body_height / 2
+
+    ctx.new_path()
+    ctx.move_to(-body_width / 2, base_y)
+    ctx.line_to(body_width / 2, base_y)
+    ctx.line_to(body_width / 2, base_y - body_height + neck_height)
+    ctx.line_to(neck_width / 2, base_y - body_height + neck_height)
+    ctx.line_to(neck_width / 2, base_y - body_height) # Leher bawah
+    ctx.line_to(-neck_width / 2, base_y - body_height) # Leher bawah
+    ctx.line_to(-neck_width / 2, base_y - body_height + neck_height)
+    ctx.line_to(-body_width / 2, base_y - body_height + neck_height)
+    ctx.close_path()
+
+    # Gradient untuk body botol (memberi kesan 3D)
+    pat = cairo.LinearGradient(-body_width / 2, 0, body_width / 2, 0)
+    pat.add_color_stop_rgb(0, *c(120, 200, 255)) # Highlight kiri
+    pat.add_color_stop_rgb(0.5, *bottle_color_body) # Tengah
+    pat.add_color_stop_rgb(1, *c(80, 160, 230)) # Shadow kanan
+    ctx.set_source(pat)
+    ctx.fill_preserve() # Isi dengan gradient
+
+    ctx.set_source_rgb(*c(50, 50, 50)) # Outline abu-abu gelap
+    ctx.set_line_width(1.5 * scale)
+    ctx.stroke()
+
+    #tutup botol
+    cap_y_bottom = base_y - body_height
+    cap_y_top = cap_y_bottom - cap_height
+    
+    ctx.new_path()
+    ctx.move_to(-cap_top_width / 2, cap_y_top)
+    ctx.line_to(cap_top_width / 2, cap_y_top)
+    ctx.line_to(neck_width / 2, cap_y_bottom)
+    ctx.line_to(-neck_width / 2, cap_y_bottom)
+    ctx.close_path()
+
+    pat_cap = cairo.LinearGradient(-cap_top_width / 2, cap_y_top, cap_top_width / 2, cap_y_top)
+    pat_cap.add_color_stop_rgb(0, *c(50, 150, 255))
+    pat_cap.add_color_stop_rgb(0.5, *bottle_color_cap)
+    pat_cap.add_color_stop_rgb(1, *c(0, 80, 180))
+    ctx.set_source(pat_cap)
+    ctx.fill_preserve()
+
+    ctx.set_source_rgb(*c(30, 30, 30)) # Outline tutup
+    ctx.stroke()
+
+#logo box others
+def draw_other_logo(scale=1.0):
+    r = 75
+    #lingkaran putih
+    ctx.set_source_rgb(*c(255, 255, 255)) 
+    ctx.set_line_width(4 * scale)
+    ctx.arc(0, 0, r * scale, 0, 2 * math.pi)
+    ctx.stroke_preserve()
+
+    ctx.set_source_rgb(*c(72, 72, 76))
+    ctx.fill()
+
+    #logo1
+    screw_x = 30 * scale
+    screw_y = 10 * scale
+    
+    ctx.set_source_rgb(0.7, 0.7, 0.7) 
+    ctx.set_line_width(8 * scale)
+    ctx.move_to(screw_x, screw_y - 40 * scale)
+    ctx.line_to(screw_x, screw_y + 40 * scale)
+    ctx.stroke()
+    
+    ctx.new_path()
+    ctx.move_to(screw_x - 5*scale, screw_y + 40*scale)
+    ctx.line_to(screw_x, screw_y + 50*scale)
+    ctx.line_to(screw_x + 5*scale, screw_y + 40*scale)
+    ctx.close_path()
+    ctx.fill()
+
+    head_cy = screw_y - 40 * scale - 12 * scale
+    ctx.set_line_width(1 * scale)
+    ctx.arc(screw_x, head_cy, 12 * scale, 0, 2 * math.pi)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.stroke()
+    
+    ctx.set_line_width(2 * scale)
+    ctx.move_to(screw_x - 10*scale, head_cy)
+    ctx.line_to(screw_x + 10*scale, head_cy)
+    ctx.stroke()
+    
+    #kaca
+    ctx.set_source_rgb(0.4, 0.8, 0.95) 
+    ctx.set_line_width(4 * scale)
+    ctx.set_line_cap(cairo.LINE_CAP_ROUND)
+    
+    glass_scale = 1.0
+    
+    ctx.new_path()
+    ctx.move_to(-40*scale * glass_scale, -5*scale * glass_scale)
+    ctx.line_to(-15*scale * glass_scale, -50*scale * glass_scale)
+    ctx.line_to(10*scale * glass_scale, -30*scale * glass_scale)
+    ctx.line_to(-10*scale * glass_scale, 0*scale * glass_scale)
+    ctx.close_path()
+    ctx.fill()
+    
+    ctx.new_path()
+    ctx.move_to(-35*scale * glass_scale, 10*scale * glass_scale)
+    ctx.line_to(0*scale * glass_scale, 40*scale * glass_scale)
+    ctx.line_to(20*scale * glass_scale, 20*scale * glass_scale)
+    ctx.line_to(-10*scale * glass_scale, 0*scale * glass_scale)
+    ctx.close_path()
+    ctx.fill()
+
+
+#text di box
+def draw_label_inside(cx, cy, text, color_rgb):
+    ctx.set_source_rgb(*color_rgb)
+    ctx.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+    ctx.set_font_size(50)
+
+    te = ctx.text_extents(text)
+    ctx.move_to(cx - te.width/2 - te.x_bearing,
+                 cy - te.height/2 - te.y_bearing)
+    ctx.show_text(text)
+
+# warna box
+color_organic = c(255, 217, 0)
+color_plastic = c(0, 138, 57)
+color_others  = c(72, 72, 76)
+
+for i, x in enumerate(xs):
+    center_x = x + bin_w // 2
+    colors = [color_organic, color_plastic, color_others]
+    
+    draw_bin(x, y, bin_w, bin_h, colors[i])
+
+#posisi logo
+org_cx = xs[0] + bin_w // 2
+org_cy = y + bin_h * 0.4
+pl_cx  = xs[1] + bin_w // 2
+pl_cy  = y + bin_h * 0.4
+oth_cx = xs[2] + bin_w // 2
+oth_cy = y + bin_h * 0.4
+
+ctx.save()
+ctx.translate(org_cx, org_cy) 
+draw_organic_logo(ctx, scale=1.5, add_circle=True, circle_fill_color=color_organic) 
+ctx.restore()
+
+ctx.save()
+ctx.translate(pl_cx, pl_cy) 
+draw_realistic_bottle_logo(ctx, scale=1.0) 
+ctx.restore()
+
+ctx.save()
+ctx.translate(oth_cx, oth_cy) 
+draw_other_logo(scale=0.8) 
+ctx.restore()
+
+draw_label_inside(org_cx, y + bin_h - 60, "ORGANIC", c(0.12,0.12,0.12))
+draw_label_inside(pl_cx,  y + bin_h - 60, "PLASTIC", c(1,1,1))
+draw_label_inside(oth_cx, y + bin_h - 60, "OTHERS",  c(1,1,1))
+
+surface.write_to_png("box_sampah.png")
+print("Selesai: box_sampah.png")

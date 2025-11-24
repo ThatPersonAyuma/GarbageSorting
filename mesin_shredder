@@ -1,0 +1,242 @@
+import cairo
+import math
+
+W, H = 1599, 899
+surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
+ctx = cairo.Context(surface)
+
+def c(r,g,b): return (r/255.0, g/255.0, b/255.0)
+
+#warna
+C_BACKGROUND = c(209, 211, 214)
+C_FLOOR = c(114, 114, 114)
+C_MACHINE_BASE = c(43, 89, 178) #biru
+C_HOPPER = c(170, 204, 230) #biru muda (untuk corong)
+C_DETAILS = c(240, 50, 50) #merah utk tombol
+C_METAL = c(150, 150, 150) #abu utk logam
+C_PLASTIC_BLOCK = c(80, 80, 80) #utk block plastik yg dihancurin
+C_BUCKET_BODY = c(190, 190, 190) #ember
+C_INPUT_SLOT = c(100, 130, 160) #biru tua 
+
+#background
+ctx.set_source_rgb(*C_BACKGROUND)
+ctx.rectangle(0, 0, W, H)
+ctx.fill()
+
+floor_y = int(H * 0.6)
+ctx.set_source_rgb(*C_FLOOR)
+ctx.rectangle(0, floor_y, W, H - floor_y)
+ctx.fill()
+
+#mesin
+CENTER_X = W // 2
+MACHINE_BASE_Y_COORD = floor_y - 120
+
+def draw_shredder(cx, cy_base, scale=1.0):
+    ctx.save()
+    ctx.translate(cx, cy_base)
+    ctx.scale(scale, scale)
+
+    base_w = 200
+    base_h = 150
+    hopper_h = 100
+    leg_w = 40
+    leg_h = 200
+
+    #kaki mesin
+    ctx.set_source_rgb(*C_MACHINE_BASE)
+    ctx.rectangle(base_w/2 - leg_w/2, 0, leg_w, leg_h)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(0,0,0)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    ctx.set_source_rgb(*C_MACHINE_BASE)
+    ctx.rectangle(-base_w/2 - leg_w/2, 0, leg_w, leg_h)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(0,0,0)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_line_width(2)
+    ctx.rectangle(-base_w/2 - leg_w/2, leg_h - 10, leg_w, 10) #garis bawah kaki kiri
+    ctx.stroke()
+    ctx.rectangle(base_w/2 - leg_w/2, leg_h - 10, leg_w, 10) #garis bawah kaki kanan
+    ctx.stroke()
+
+
+    #body mesin
+    body_y = -base_h
+    ctx.set_source_rgb(*C_MACHINE_BASE)
+    ctx.rectangle(-base_w/2, body_y, base_w, base_h)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(0,0,0)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    #bagian bergaris mesin
+    slot_y = body_y + 40
+    slot_h = 70
+    ctx.set_source_rgb(*c(20, 70, 150)) #warna lebih gelap untuk bagian dalam
+    ctx.rectangle(-base_w/2 + 20, slot_y, base_w - 40, slot_h)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(0,0,0)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    #garis garis
+    ctx.set_source_rgb(*c(43, 89, 178)) #warna garis lebih terang dari panel
+    for i in range(1, 8):
+        line_x = -base_w/2 + 25 + i * 15 #posisi dan jarak garis
+        ctx.rectangle(line_x, slot_y + 5, 5, slot_h - 10)
+        ctx.fill()
+
+    #bagian samping yang melengkung biru muda
+    side_w = 70
+    side_r = 35
+    side_x_center = base_w/2 + 10 
+    side_y_center = body_y + base_h/2
+
+    ctx.set_source_rgb(*c(170, 204, 230))
+    ctx.new_path()
+    ctx.arc(side_x_center, side_y_center, side_r, -math.pi/2, math.pi/2)
+    ctx.line_to(side_x_center, body_y + base_h) # Garis lurus ke bawah
+    ctx.line_to(side_x_center - side_r, body_y + base_h) # Garis lurus ke kiri
+    ctx.line_to(side_x_center - side_r, body_y) # Garis lurus ke atas
+    ctx.close_path() 
+    ctx.fill_preserve()
+    ctx.set_source_rgb(0,0,0)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    #tombol
+    ctx.set_source_rgb(*C_DETAILS)
+    ctx.arc(side_x_center, body_y + 50, 15, 0, 2 * math.pi)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    #corong atas
+    # *** PERUBAHAN DI SINI: hopper_main_y disatukan dengan body_y ***
+    hopper_main_y = body_y #diatas mesin tanpa space
+    hopper_base_w = base_w + 20 # Lebar dasar corong, sedikit lebih lebar dari badan mesin
+    hopper_top_w = hopper_base_w + 100 # Lebih lebar di atas
+    hopper_height = 120 #tinggi corong
+
+    ctx.new_path()
+    ctx.move_to(-hopper_top_w/2, hopper_main_y - hopper_height) # Titik kiri atas
+    ctx.line_to(hopper_top_w/2, hopper_main_y - hopper_height) # Titik kanan atas
+    ctx.line_to(hopper_base_w/2, hopper_main_y) # Titik kanan bawah
+    ctx.line_to(-hopper_base_w/2, hopper_main_y) # Titik kiri bawah
+    ctx.close_path()
+
+    ctx.set_source_rgb(*C_HOPPER)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_line_width(2)
+    ctx.stroke()
+    
+    input_slot_top_w = hopper_top_w - 40 # Lebih kecil dari atas corong
+    input_slot_bottom_w = hopper_base_w - 20 # Lebih kecil dari dasar corong
+    input_slot_height = 40 # Memberikan kesan kedalaman
+    input_slot_y_offset = 10 # Sedikit turun dari tepi atas corong
+
+    ctx.new_path()
+    ctx.move_to(-input_slot_top_w/2, hopper_main_y - hopper_height + input_slot_y_offset)
+    ctx.line_to(input_slot_top_w/2, hopper_main_y - hopper_height + input_slot_y_offset)
+    ctx.line_to(input_slot_bottom_w/2, hopper_main_y - input_slot_height + input_slot_y_offset)
+    ctx.line_to(-input_slot_bottom_w/2, hopper_main_y - input_slot_height + input_slot_y_offset)
+    ctx.close_path()
+
+    ctx.set_source_rgb(*C_INPUT_SLOT)
+    ctx.fill()
+
+    ctx.restore()
+
+    #blok plastik (abu2 gelap)
+    block_w = 100
+    block_h = 50
+    BLOCK_FALL_Y = cy_base + 10
+    BLOCK_FALL_X = cx - 50
+
+    ctx.save()
+    ctx.translate(BLOCK_FALL_X, BLOCK_FALL_Y)
+    ctx.scale(scale, scale)
+
+    ctx.new_path()
+    ctx.move_to(-block_w/2, 0)
+    ctx.line_to(block_w/2, 0)
+    ctx.line_to(block_w/2 + 20, -block_h)
+    ctx.line_to(-block_w/2 + 20, -block_h)
+    ctx.close_path()
+
+    ctx.set_source_rgb(*C_PLASTIC_BLOCK)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    ctx.restore()
+
+
+#ember
+def draw_bucket(cx, cy, scale=1.0):
+    ctx.save()
+    ctx.translate(cx, cy)
+    ctx.scale(scale, scale)
+
+    bucket_h = 150
+    top_r = 70
+    bottom_r = 50
+
+    #body ember
+    ctx.new_path()
+    ctx.move_to(-top_r, 0)
+    ctx.line_to(-bottom_r, bucket_h)
+    ctx.line_to(bottom_r, bucket_h)
+    ctx.line_to(top_r, 0)
+    ctx.close_path()
+
+    ctx.set_source_rgb(*C_BUCKET_BODY)
+    ctx.fill_preserve()
+
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    ctx.set_line_width(4)
+    ctx.move_to(-top_r, 0)
+    ctx.line_to(top_r, 0)
+    ctx.stroke()
+
+    #pegangan ember
+    wire_r = top_r + 5
+    ctx.set_source_rgb(*C_METAL)
+    ctx.set_line_width(6)
+    ctx.arc(0, 0, wire_r, math.pi, 0)
+    ctx.stroke()
+
+    #getail body(garis)
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_line_width(1)
+    ctx.move_to(-top_r * 0.8, bucket_h * 0.4)
+    ctx.line_to(top_r * 0.8, bucket_h * 0.4)
+    ctx.stroke()
+    ctx.move_to(-top_r * 0.7, bucket_h * 0.8)
+    ctx.line_to(top_r * 0.7, bucket_h * 0.8)
+    ctx.stroke()
+
+    ctx.restore()
+
+
+BUCKET_X = CENTER_X - 100
+BUCKET_Y = floor_y - 40 
+
+draw_shredder(CENTER_X, MACHINE_BASE_Y_COORD, scale=1.3)
+draw_bucket(BUCKET_X, BUCKET_Y, scale=1.3)
+
+
+surface.write_to_png("mesin_shredder.png")
+print("Selesai: mesin_shredder.png")
