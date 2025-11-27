@@ -1,0 +1,251 @@
+import cairo
+import math
+
+W, H = 1599, 899
+surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
+ctx = cairo.Context(surface)
+
+def c(r,g,b): return (r/255.0, g/255.0, b/255.0)
+
+#pallet warna
+C_BACKGROUND = c(209, 211, 214)
+C_FLOOR = c(114, 114, 114)
+C_FRAME_BLUE = c(0, 80, 160)    
+C_ACCENT_RED = c(200, 30, 30)    
+C_GEAR_GREY = c(100, 100, 100)   
+C_PISTON_GREY = c(150, 150, 150) 
+C_LINE = c(0, 0, 0)             
+C_BUTTON_RED = c(240, 50, 50)  
+C_WHITE_PANEL = c(240, 240, 240) 
+
+#background
+ctx.set_source_rgb(*C_BACKGROUND)
+ctx.rectangle(0, 0, W, H)
+ctx.fill()
+
+floor_y = int(H * 0.8)
+ctx.set_source_rgb(*C_FLOOR)
+ctx.rectangle(0, floor_y, W, H - floor_y)
+ctx.fill()
+
+#mesin
+CENTER_X = W // 2
+MACHINE_BASE_Y_COORD = floor_y - 20
+SCALE = 1.0
+
+def draw_paving_press_ref(cx, cy_base, scale=1.0):
+    ctx.save()
+    ctx.translate(cx, cy_base)
+    ctx.scale(scale, scale)
+
+    TOTAL_MACHINE_WIDTH = 400
+    TOTAL_MACHINE_HEIGHT = 650
+
+    #bagian bawah yg biru
+    BASE_WIDTH = TOTAL_MACHINE_WIDTH + 80
+    BASE_HEIGHT = 80
+    ctx.set_source_rgb(*C_FRAME_BLUE)
+    ctx.rectangle(-BASE_WIDTH/2, -BASE_HEIGHT, BASE_WIDTH, BASE_HEIGHT)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    #kaki
+    LEG_SPAN = TOTAL_MACHINE_WIDTH * 0.8
+    LEG_THICKNESS = 40
+    LEG_HEIGHT = 150
+    LEG_Y = -BASE_HEIGHT - LEG_HEIGHT
+
+    ctx.set_source_rgb(*C_FRAME_BLUE)
+    ctx.rectangle(-LEG_SPAN/2 - LEG_THICKNESS/2, LEG_Y, LEG_THICKNESS, LEG_HEIGHT)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    ctx.set_source_rgb(*C_FRAME_BLUE)
+    ctx.rectangle(LEG_SPAN/2 - LEG_THICKNESS/2, LEG_Y, LEG_THICKNESS, LEG_HEIGHT)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    # Balok Horizontal Tengah (Penopang Platform Merah)
+    MIDDLE_BEAM_W = TOTAL_MACHINE_WIDTH + 20
+    MIDDLE_BEAM_H = 40
+    MIDDLE_BEAM_Y = LEG_Y + 10
+    ctx.set_source_rgb(*C_FRAME_BLUE)
+    ctx.rectangle(-MIDDLE_BEAM_W/2, MIDDLE_BEAM_Y, MIDDLE_BEAM_W, MIDDLE_BEAM_H)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    # 2. Platform Cetakan (Merah)
+    PLATFORM_W = TOTAL_MACHINE_WIDTH * 0.9
+    PLATFORM_H = 60
+    PLATFORM_Y = MIDDLE_BEAM_Y + MIDDLE_BEAM_H
+    ctx.set_source_rgb(*C_ACCENT_RED)
+    ctx.rectangle(-PLATFORM_W/2, PLATFORM_Y, PLATFORM_W, PLATFORM_H)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    # Label pada Platform
+    LABEL_PLATFORM_W = PLATFORM_W * 0.7
+    LABEL_PLATFORM_H = PLATFORM_H * 0.8
+    LABEL_PLATFORM_Y = PLATFORM_Y + (PLATFORM_H - LABEL_PLATFORM_H)/2
+    ctx.set_source_rgb(*C_WHITE_PANEL)
+    ctx.rectangle(-LABEL_PLATFORM_W/2, LABEL_PLATFORM_Y, LABEL_PLATFORM_W, LABEL_PLATFORM_H)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(1)
+    ctx.stroke()
+
+    # 3. Rangka Utama Atas (Biru Vertikal dan Horizontal)
+    UPPER_FRAME_WIDTH = TOTAL_MACHINE_WIDTH
+    UPPER_FRAME_HEIGHT = TOTAL_MACHINE_HEIGHT - LEG_HEIGHT - BASE_HEIGHT - PLATFORM_H + 50
+    UPPER_FRAME_Y = PLATFORM_Y - UPPER_FRAME_HEIGHT - 30
+
+    # Tiang Vertikal Kiri
+    ctx.set_source_rgb(*C_FRAME_BLUE)
+    ctx.rectangle(-UPPER_FRAME_WIDTH/2, UPPER_FRAME_Y, LEG_THICKNESS, UPPER_FRAME_HEIGHT)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    # Tiang Vertikal Kanan
+    ctx.set_source_rgb(*C_FRAME_BLUE)
+    ctx.rectangle(UPPER_FRAME_WIDTH/2 - LEG_THICKNESS, UPPER_FRAME_Y, LEG_THICKNESS, UPPER_FRAME_HEIGHT)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    # Balok Horizontal Atas (Biru)
+    TOPMOST_BEAM_W = TOTAL_MACHINE_WIDTH
+    TOPMOST_BEAM_H = 60
+    TOPMOST_BEAM_Y = UPPER_FRAME_Y - TOPMOST_BEAM_H
+    ctx.set_source_rgb(*C_FRAME_BLUE)
+    ctx.rectangle(-TOPMOST_BEAM_W/2, TOPMOST_BEAM_Y, TOPMOST_BEAM_W, TOPMOST_BEAM_H)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    # 4. Mekanisme Press Merah (Di antara rangka atas)
+    PRESS_MECHANISM_W = UPPER_FRAME_WIDTH * 0.8
+    PRESS_MECHANISM_H = 100
+    PRESS_MECHANISM_Y = TOPMOST_BEAM_Y + TOPMOST_BEAM_H - 10
+
+    ctx.set_source_rgb(*C_ACCENT_RED)
+    ctx.rectangle(-PRESS_MECHANISM_W/2, PRESS_MECHANISM_Y, PRESS_MECHANISM_W, PRESS_MECHANISM_H)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    # Label pada mekanisme Press
+    LABEL_PRESS_W = PRESS_MECHANISM_W * 0.7
+    LABEL_PRESS_H = PRESS_MECHANISM_H * 0.6
+    LABEL_PRESS_Y = PRESS_MECHANISM_Y + (PRESS_MECHANISM_H - LABEL_PRESS_H)/2
+    ctx.set_source_rgb(*C_WHITE_PANEL)
+    ctx.rectangle(-LABEL_PRESS_W/2, LABEL_PRESS_Y, LABEL_PRESS_W, LABEL_PRESS_H)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(1)
+    ctx.stroke()
+
+    # 5. Batang-batang Piston (dari mekanisme press merah ke bawah)
+    PISTON_BAR_W = 20
+    PISTON_BAR_H = UPPER_FRAME_HEIGHT - PRESS_MECHANISM_H - 50
+    PISTON_BAR_Y_START = PRESS_MECHANISM_Y + PRESS_MECHANISM_H
+
+    PISTON_COUNT = 4
+    PISTON_SPACING = (PRESS_MECHANISM_W * 0.7) / (PISTON_COUNT + 1)
+    for i in range(PISTON_COUNT):
+        x_offset = -PRESS_MECHANISM_W * 0.7 / 2 + PISTON_SPACING * (i + 1)
+        ctx.set_source_rgb(*C_PISTON_GREY)
+        ctx.rectangle(x_offset - PISTON_BAR_W/2, PISTON_BAR_Y_START, PISTON_BAR_W, PISTON_BAR_H)
+        ctx.fill_preserve()
+        ctx.set_source_rgb(*C_LINE)
+        ctx.set_line_width(2)
+        ctx.stroke()
+
+    # Batang penghubung Piston
+    PISTON_CONNECT_BAR_W = PRESS_MECHANISM_W * 0.7 + PISTON_BAR_W
+    PISTON_CONNECT_BAR_H = 30
+    PISTON_CONNECT_BAR_Y = PISTON_BAR_Y_START + PISTON_BAR_H - PISTON_CONNECT_BAR_H
+    ctx.set_source_rgb(*C_ACCENT_RED)
+    ctx.rectangle(-PISTON_CONNECT_BAR_W/2, PISTON_CONNECT_BAR_Y, PISTON_CONNECT_BAR_W, PISTON_CONNECT_BAR_H)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    # 8. Corong Input (Belakang/Atas)
+    HOPPER_W = TOTAL_MACHINE_WIDTH * 0.7
+    HOPPER_H = 100
+    HOPPER_Y = TOPMOST_BEAM_Y - HOPPER_H + 20
+
+    ctx.set_source_rgb(*C_GEAR_GREY)
+    ctx.move_to(-HOPPER_W/2, HOPPER_Y)
+    ctx.line_to(-HOPPER_W/2 - 30, HOPPER_Y - HOPPER_H)
+    ctx.line_to(HOPPER_W/2 + 30, HOPPER_Y - HOPPER_H)
+    ctx.line_to(HOPPER_W/2, HOPPER_Y)
+    ctx.close_path()
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    #button merah
+    KNOB_R = 20
+    KNOB_X = -TOTAL_MACHINE_WIDTH/2 + 60
+    KNOB_Y = MIDDLE_BEAM_Y + MIDDLE_BEAM_H + 30
+
+    ctx.set_source_rgb(*C_BUTTON_RED)
+    ctx.arc(KNOB_X, KNOB_Y, KNOB_R, 0, 2 * math.pi)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(3)
+    ctx.stroke()
+
+    # Paving yang Sudah Jadi (di bawah mold box)
+    PAVING_W = TOTAL_MACHINE_WIDTH * 0.8 / 3
+    PAVING_H = 30
+    PAVING_Y = cy_base + 50
+
+    # Paving 1
+    ctx.set_source_rgb(*c(150, 100, 70))
+    ctx.rectangle(-PAVING_W * 1.5, PAVING_Y, PAVING_W, PAVING_H)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    # Paving 2
+    ctx.set_source_rgb(*c(150, 100, 70))
+    ctx.rectangle(-PAVING_W * 0.5, PAVING_Y, PAVING_W, PAVING_H)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    # Paving 3
+    ctx.set_source_rgb(*c(150, 100, 70))
+    ctx.rectangle(PAVING_W * 0.5, PAVING_Y, PAVING_W, PAVING_H)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*C_LINE)
+    ctx.set_line_width(2)
+    ctx.stroke()
+
+    ctx.restore()
+
+draw_paving_press_ref(CENTER_X, MACHINE_BASE_Y_COORD, scale=SCALE)
+
+surface.write_to_png("mesin_cetak_paving.png")
+print("Selesai: mesin_cetak_paving.png")
