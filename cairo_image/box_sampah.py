@@ -27,7 +27,7 @@ start_x = (W - (3*bin_w + 2*gap)) // 2
 xs = [start_x + i*(bin_w+gap) for i in range(3)]
 y = top_margin
 
-def rounded_rect(x, y, w, h, r):
+def rounded_rect(ctx, x, y, w, h, r):
     ctx.new_sub_path()
     ctx.arc(x + w - r, y + r, r, -math.pi/2, 0)
     ctx.arc(x + w - r, y + h - r, r, 0, math.pi/2)
@@ -35,13 +35,13 @@ def rounded_rect(x, y, w, h, r):
     ctx.arc(x + r, y + r, r, math.pi, 3*math.pi/2)
     ctx.close_path()
 
-def draw_bin(cx, cy, w, h, color_rgb):
+def draw_bin(cx, cy, w, h, color_rgb, ctx):
     lid_h = int(h * 0.20)
     lid_x = cx
     lid_y = cy
     lid_r = 26
     ctx.set_source_rgb(*color_rgb)
-    rounded_rect(lid_x, lid_y, w, lid_h, lid_r)
+    rounded_rect(ctx, lid_x, lid_y, w, lid_h, lid_r)
     ctx.fill()
 
     ctx.set_source_rgba(0,0,0,0.12)
@@ -181,7 +181,7 @@ def draw_realistic_bottle_logo(ctx, scale=1.0):
     ctx.stroke()
 
 #logo box others
-def draw_other_logo(scale=1.0):
+def draw_other_logo(ctx, scale=1.0):
     r = 75
     #lingkaran putih
     ctx.set_source_rgb(*c(255, 255, 255)) 
@@ -265,7 +265,7 @@ for i, x in enumerate(xs):
     center_x = x + bin_w // 2
     colors = [color_organic, color_plastic, color_others]
     
-    draw_bin(x, y, bin_w, bin_h, colors[i])
+    draw_bin(x, y, bin_w, bin_h, colors[i], ctx)
 
 #posisi logo
 org_cx = xs[0] + bin_w // 2
@@ -287,7 +287,7 @@ ctx.restore()
 
 ctx.save()
 ctx.translate(oth_cx, oth_cy) 
-draw_other_logo(scale=0.8) 
+draw_other_logo(ctx, scale=0.8) 
 ctx.restore()
 
 draw_label_inside(org_cx, y + bin_h - 60, "ORGANIC", c(0.12,0.12,0.12))
@@ -296,3 +296,41 @@ draw_label_inside(oth_cx, y + bin_h - 60, "OTHERS",  c(1,1,1))
 
 surface.write_to_png("box_sampah.png")
 print("Selesai: box_sampah.png")
+def create_bin_surface(bin_w, bin_h, color_rgb, draw_logo_func=None, logo_scale=1.0, scale=(bin_w, bin_h)):
+    # buat surface baru untuk bin
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, scale[0], scale[1])
+    ctx = cairo.Context(surface)
+    sx = scale[0] / bin_w
+    sy = scale[1] / bin_h
+    ctx.scale(sx, sy)
+    # background transparan
+    ctx.set_source_rgba(0,0,0,0)
+    ctx.rectangle(0, 0, bin_w, bin_h)
+    ctx.fill()
+
+    # gambar bin
+    draw_bin(0, 0, bin_w, bin_h, color_rgb, ctx)
+
+    # gambar logo jika ada
+    if draw_logo_func:
+        ctx.save()
+        ctx.translate(bin_w//2, bin_h * 0.4)  # posisi logo relatif
+        draw_logo_func(ctx, scale=logo_scale)
+        ctx.restore()
+
+    return surface
+
+def get_bins():
+    # warna box
+    color_organic = c(255, 217, 0)
+    color_plastic = c(0, 138, 57)
+    color_others  = c(72, 72, 76)
+    # buat masing-masing surface
+    organic_surface = create_bin_surface(bin_w, bin_h, color_organic, draw_organic_logo, 1.5, (160, 200))
+    plastic_surface = create_bin_surface(bin_w, bin_h, color_plastic, draw_realistic_bottle_logo, 1.0, (160, 200))
+    other_surface   = create_bin_surface(bin_w, bin_h, color_others, draw_other_logo, 0.8, (160, 200))
+
+    # simpan sebagai file terpisah (opsional)
+    return (plastic_surface,
+        organic_surface,
+        other_surface)

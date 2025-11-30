@@ -1,7 +1,8 @@
 import cairo
 import math
 
-W, H = 1599, 899
+W, H = 220, 358
+# W, H = 1600, 1600
 surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
 ctx = cairo.Context(surface)
 
@@ -19,24 +20,24 @@ C_BUTTON_RED = c(240, 50, 50)
 C_WHITE_PANEL = c(240, 240, 240) 
 
 #background
-ctx.set_source_rgb(*C_BACKGROUND)
-ctx.rectangle(0, 0, W, H)
-ctx.fill()
+# ctx.set_source_rgb(*C_BACKGROUND)
+# ctx.rectangle(0, 0, W, H)
+# ctx.fill()
 
 floor_y = int(H * 0.8)
-ctx.set_source_rgb(*C_FLOOR)
-ctx.rectangle(0, floor_y, W, H - floor_y)
-ctx.fill()
+# ctx.set_source_rgb(*C_FLOOR)
+# ctx.rectangle(0, floor_y, W, H - floor_y)
+# ctx.fill()
 
 #mesin
 CENTER_X = W // 2
-MACHINE_BASE_Y_COORD = floor_y - 20
+MACHINE_BASE_Y_COORD = floor_y + 80
 SCALE = 1.0
 
 def draw_paving_press_ref(cx, cy_base, scale=1.0):
     ctx.save()
     ctx.translate(cx, cy_base)
-    ctx.scale(scale, scale)
+    ctx.scale(220/400, 358/650)
 
     TOTAL_MACHINE_WIDTH = 400
     TOTAL_MACHINE_HEIGHT = 650
@@ -190,17 +191,8 @@ def draw_paving_press_ref(cx, cy_base, scale=1.0):
     HOPPER_W = TOTAL_MACHINE_WIDTH * 0.7
     HOPPER_H = 100
     HOPPER_Y = TOPMOST_BEAM_Y - HOPPER_H + 20
-
-    ctx.set_source_rgb(*C_GEAR_GREY)
-    ctx.move_to(-HOPPER_W/2, HOPPER_Y)
-    ctx.line_to(-HOPPER_W/2 - 30, HOPPER_Y - HOPPER_H)
-    ctx.line_to(HOPPER_W/2 + 30, HOPPER_Y - HOPPER_H)
-    ctx.line_to(HOPPER_W/2, HOPPER_Y)
-    ctx.close_path()
-    ctx.fill_preserve()
-    ctx.set_source_rgb(*C_LINE)
-    ctx.set_line_width(2)
-    ctx.stroke()
+    # surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
+    
 
     #button merah
     KNOB_R = 20
@@ -244,8 +236,53 @@ def draw_paving_press_ref(cx, cy_base, scale=1.0):
     ctx.stroke()
 
     ctx.restore()
+# draw_paving_press_ref(CENTER_X, MACHINE_BASE_Y_COORD, scale=SCALE)
+# surface.write_to_png("cairo_image/paving.png")
+def get_presser():
+    draw_paving_press_ref(CENTER_X, MACHINE_BASE_Y_COORD, scale=SCALE)
+    surface.write_to_png("cairo_image/paving.png")
+    return surface
 
-draw_paving_press_ref(CENTER_X, MACHINE_BASE_Y_COORD, scale=SCALE)
+def get_paving_mold():
+    TOTAL_MACHINE_WIDTH = 400
+    TOPMOST_BEAM_H = 60
+    TOTAL_MACHINE_WIDTH = 400
+    TOTAL_MACHINE_HEIGHT = 650
 
-surface.write_to_png("mesin_cetak_paving.png")
-print("Selesai: mesin_cetak_paving.png")
+    #bagian bawah yg biru
+    # BASE_WIDTH = TOTAL_MACHINE_WIDTH + 80
+    BASE_HEIGHT = 80
+    # MIDDLE_BEAM_W = TOTAL_MACHINE_WIDTH + 20
+    MIDDLE_BEAM_H = 40
+    LEG_HEIGHT = 150
+    LEG_Y = -BASE_HEIGHT - LEG_HEIGHT
+    MIDDLE_BEAM_Y = LEG_Y + 10
+    PLATFORM_H = 60
+    UPPER_FRAME_HEIGHT = TOTAL_MACHINE_HEIGHT - LEG_HEIGHT - BASE_HEIGHT - PLATFORM_H + 50
+    PLATFORM_Y = MIDDLE_BEAM_Y + MIDDLE_BEAM_H
+    UPPER_FRAME_Y = PLATFORM_Y - UPPER_FRAME_HEIGHT - 30
+    TOPMOST_BEAM_Y = UPPER_FRAME_Y - TOPMOST_BEAM_H
+    HOPPER_W = TOTAL_MACHINE_WIDTH * 0.7
+    HOPPER_H = 100
+    HOPPER_Y = TOPMOST_BEAM_Y - HOPPER_H + 20
+    # surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
+    surface1 = cairo.ImageSurface(cairo.FORMAT_ARGB32, 190,56)#100, 60
+    ctx1 = cairo.Context(surface1)
+    ctx1.save()
+    ctx1.translate(95,474)
+    ctx1.scale(220/400, 358/650)
+    # surface1.write_to_png("cairo_image/paving1233.png")
+    ctx1.set_source_rgb(*C_GEAR_GREY)
+    ctx1.move_to(-HOPPER_W/2, HOPPER_Y)
+    ctx1.line_to(-HOPPER_W/2 - 30, HOPPER_Y - HOPPER_H)
+    ctx1.line_to(HOPPER_W/2 + 30, HOPPER_Y - HOPPER_H)
+    ctx1.line_to(HOPPER_W/2, HOPPER_Y)
+    ctx1.close_path()
+    ctx1.fill_preserve()
+    ctx1.set_source_rgb(*C_LINE)
+    ctx1.set_line_width(2)
+    ctx1.stroke()
+    return surface1
+    # surface1.write_to_png("cairo_image/paving1233.png")
+    # print("saved")
+# get_paving_mold()

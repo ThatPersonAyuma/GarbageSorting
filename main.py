@@ -11,7 +11,7 @@ from component.objects import ImageObject, TrashObject, TrashType, TrashBin
 from component.text_area import create_text_box
 
 from scenes import IndustryRoom, outdoor, PickUpGarage, TrashTruck
-
+from cairo_image import *
 
 pygame.init()
 
@@ -48,35 +48,14 @@ scene_b.fill((200, 90, 70))
 current_scene = scene_a
 next_scene = scene_b
 
-
-
-
-
 width, height = 60, 60
 surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
 ctx = cairo.Context(surface)
-
-# Contoh gambar: lingkaran merah
-
-# Buat Pygame surface
-pygame_surface = convert.convert_cairo_to_pygame_surf(surface)
-
-# Buat beberapa dummy object
-
-# image = pygame.Surface((100, 100), pygame.SRCALPHA)
-# pygame.draw.circle(image, (255,0,0), (50,50), 50)
-
-# Posisi awal
-# start_pos = (150, 150)
-# pos = list(start_pos)
 
 dragging = False
 offset_x = offset_y = 0
 
 running = True
-
-
-
 
 # region GrbageList & TrashItems
 widthb, heightb = 90, 90
@@ -98,23 +77,24 @@ garbage = ItemList(items, start_pos=SCROLL_POS, spacing=SCROLL_SPACING, max_show
 
 # region TrashBin
 width, height = 100, 160
-spacing = BOX_SIZE[0]+10
-trash_bin = (170, 500)
-surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-ctx = cairo.Context(surface)
-ctx.set_source_rgb(1,1,0)
-ctx.paint()
-trashbean_plastic = TrashBin(trash_bin[0], trash_bin[1], surface, TrashType.PLASTIC, "Tempat Sampah Plastik")
+spacing = 158
+trash_bin = (115, 350)
+# surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+# ctx = cairo.Context(surface)
+# ctx.set_source_rgb(1,1,0)
+# ctx.paint()
+trashbins = box_sampah.get_bins()
+trashbean_plastic = TrashBin(trash_bin[0], trash_bin[1], trashbins[0], TrashType.PLASTIC, "Tempat Sampah Plastik")
 surface1 = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
 ctx1 = cairo.Context(surface1)
 ctx1.set_source_rgb(0,1,0)
 ctx1.paint()
-trashbean_organic = TrashBin(trash_bin[0]+width+spacing, trash_bin[1], surface1, TrashType.ORGANIC, "Tempat Sampah Organik")
+trashbean_organic = TrashBin(trash_bin[0]+width+spacing, trash_bin[1], trashbins[1], TrashType.ORGANIC, "Tempat Sampah Organik")
 surface2 = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
 ctx2 = cairo.Context(surface2)
 ctx2.set_source_rgb(190/255, 190/255, 190/255)
 ctx2.paint()
-trashbean_other = TrashBin(trash_bin[0]+2*(width+spacing), trash_bin[1], surface2, TrashType.OTHERS, "Tempat Sampah Lainnya")
+trashbean_other = TrashBin(trash_bin[0]+2*(width+spacing), trash_bin[1], trashbins[2], TrashType.OTHERS, "Tempat Sampah Lainnya")
 trashbeans = [trashbean_plastic, trashbean_organic, trashbean_other]
 # endregion
 
@@ -209,7 +189,7 @@ def sorting_space():
                     if len(garbage.inventory)==0:
                         for trashbean in trashbeans[:-1]:
                             if trashbean.collide_point((mx, my)):
-                                trashbean.scale(BOX_SIZE[0], BOX_SIZE[1])
+                                trashbean.scale(120, 150)
                                 hold_item = trashbean
                                 old_hi_rect = trashbean.rect
                                 trashbean.rect = hold_item_rect.copy()
@@ -416,22 +396,27 @@ def home_space():
 
 
 # region Working Components
-width, height = 100, 160
-trash_bin = (370, 300)
+width, height = 220, 480
+trash_bin = (240, 100)
 spacing = BOX_SIZE[0]+5
-surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-ctx = cairo.Context(surface)
-ctx.set_source_rgb(1,0,0)
-ctx.paint()
-shredder = TrashBin(trash_bin[0], trash_bin[1], surface, TrashType.OBJECT, "Pencacah Plastik")
-furnace = TrashBin(trash_bin[0]+width+spacing, trash_bin[1], surface, TrashType.OBJECT, "Mesin Peleleh Plastik")
-presser = TrashBin(trash_bin[0]+2*(width+spacing), trash_bin[1], surface, TrashType.OBJECT, "Mesin Penekan")
+# surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+# ctx = cairo.Context(surface)
+# ctx.set_source_rgb(1,0,0)
+# ctx.paint()
+furnace_image = mesin_furnace.get_furnace()
+presser_image = mesin_paving_block.get_presser()
+shredder_image = mesin_shredder.get_shredder()
+bucket_image = mesin_shredder.get_bucket()
+mold = mesin_paving_block.get_paving_mold()
+shredder = TrashBin(trash_bin[0], trash_bin[1]+130, shredder_image, TrashType.OBJECT, "Pencacah Plastik")
+furnace = TrashBin(trash_bin[0]+width+spacing+10, trash_bin[1]+135, furnace_image, TrashType.OBJECT, "Mesin Peleleh Plastik")
+presser = TrashBin(trash_bin[0]+2*(width+spacing), trash_bin[1]+95, presser_image, TrashType.OBJECT, "Mesin Penekan")
 surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width*0.7), int(height*0.3))
 ctx = cairo.Context(surface)
 ctx.set_source_rgb(0.5,0.5,0)
-shredder_bucket = TrashObject(shredder.rect.x + int(width*0.15), shredder.rect.y+shredder.rect.height-surface.get_height(), surface, "Bak Penampung Cacahan", TrashType.OBJECT)
-paving_mold = TrashObject(furnace.rect.x+int(width*0.15), furnace.rect.y+furnace.rect.height-surface.get_height(), surface, "Cetakan Paving", TrashType.OBJECT)
-mold_hold_rect = pygame.Rect(presser.rect.x+int(width*0.15), presser.rect.y+(presser.rect.height-surface.get_height())*2/3, surface.get_width(), surface.get_height())
+shredder_bucket = TrashObject(shredder.rect.x + int(width*0.28), shredder.rect.y+shredder.rect.height-bucket_image.get_height(), bucket_image, "Bak Penampung Cacahan", TrashType.OBJECT)
+paving_mold = TrashObject(furnace.rect.x+int(width*0.08), furnace.rect.y+furnace.rect.height-mold.get_height(), mold, "Cetakan Paving", TrashType.OBJECT)
+mold_hold_rect = pygame.Rect(presser.rect.x+int(width*0.1), presser.rect.y+(presser.rect.height-mold.get_height())*2/3, mold.get_width(), mold.get_height())
 # endregion
     
 # region Working Logic
@@ -596,9 +581,9 @@ def working_space():
         elif x<0:
             x = 0
         screen.blit(text_surf, (x, pos[1] + 20))
-    if shredder_timer>0:screen.blit(create_text_box(create_time_text(shredder_timer), 20, (0,0,0,0.5)), shredder.rect.topleft)
-    if furnace_timer>0:screen.blit(create_text_box(create_time_text(furnace_timer), 20, (0,0,0,0.5)), furnace.rect.topleft)
-    if presser_timer>0:screen.blit(create_text_box(create_time_text(presser_timer), 20, (0,0,0,0.5)), presser.rect.topleft)
+    if shredder_timer>0:screen.blit(create_text_box(create_time_text(shredder_timer), 20, (0,0,0,0.5)), (shredder.rect.topleft[0]+65, shredder.rect.topleft[1]))
+    if furnace_timer>0:screen.blit(create_text_box(create_time_text(furnace_timer), 20, (0,0,0,0.5)), (furnace.rect.topleft[0]+63, furnace.rect.topleft[1]))
+    if presser_timer>0:screen.blit(create_text_box(create_time_text(presser_timer), 20, (0,0,0,0.5)), (presser.rect.topleft[0]+65, presser.rect.topleft[1]))
     pygame.display.flip()
 # endregion
 
@@ -764,7 +749,7 @@ if __name__ == "__main__":
     state = Scene.HOME
     hold_item = None
     old_hi_rect = None
-    hold_item_rect = pygame.Rect(640, 530, BOX_SIZE[0], BOX_SIZE[1])
+    hold_item_rect = pygame.Rect(640, 530, 120, 150)
     callback_to_working = create_button_move_scene_call(Scene.WORKING)
     callback_to_home = create_button_move_scene_call(Scene.HOME)
     callback_to_outside = create_button_move_scene_call(Scene.OUTSIDE)

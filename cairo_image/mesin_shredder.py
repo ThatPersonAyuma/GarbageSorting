@@ -19,23 +19,23 @@ C_BUCKET_BODY = c(190, 190, 190) #ember
 C_INPUT_SLOT = c(100, 130, 160) #biru tua 
 
 #background
-ctx.set_source_rgb(*C_BACKGROUND)
-ctx.rectangle(0, 0, W, H)
-ctx.fill()
+# ctx.set_source_rgb(*C_BACKGROUND)
+# ctx.rectangle(0, 0, W, H)
+# ctx.fill()
 
 floor_y = int(H * 0.6)
-ctx.set_source_rgb(*C_FLOOR)
-ctx.rectangle(0, floor_y, W, H - floor_y)
-ctx.fill()
+# ctx.set_source_rgb(*C_FLOOR)
+# ctx.rectangle(0, floor_y, W, H - floor_y)
+# ctx.fill()
 
 #mesin
 CENTER_X = W // 2
 MACHINE_BASE_Y_COORD = floor_y - 120
 
-def draw_shredder(cx, cy_base, scale=1.0):
+def draw_shredder(ctx, cx, cy_base, scale=1.0):
     ctx.save()
     ctx.translate(cx, cy_base)
-    ctx.scale(scale, scale)
+    ctx.scale(220/320, 323/470)
 
     base_w = 200
     base_h = 150
@@ -182,10 +182,10 @@ def draw_shredder(cx, cy_base, scale=1.0):
 
 
 #ember
-def draw_bucket(cx, cy, scale=1.0):
+def draw_bucket(ctx, cx, cy, scale=1.0):
     ctx.save()
     ctx.translate(cx, cy)
-    ctx.scale(scale, scale)
+    ctx.scale(180/320, 264/470)
 
     bucket_h = 150
     top_r = 70
@@ -234,9 +234,27 @@ def draw_bucket(cx, cy, scale=1.0):
 BUCKET_X = CENTER_X - 100
 BUCKET_Y = floor_y - 40 
 
-draw_shredder(CENTER_X, MACHINE_BASE_Y_COORD, scale=1.3)
-draw_bucket(BUCKET_X, BUCKET_Y, scale=1.3)
-
-
-surface.write_to_png("mesin_shredder.png")
-print("Selesai: mesin_shredder.png")
+# draw_shredder(CENTER_X, MACHINE_BASE_Y_COORD, scale=1.3)
+def get_bucket():
+    surface1 = cairo.ImageSurface(cairo.FORMAT_ARGB32, 100, 135)
+    ctx1 = cairo.Context(surface1)
+    draw_bucket(ctx1, 50, 48, scale=1.3)
+    # surface1.write_to_png("ember.png")
+    return surface1
+def get_shredder():
+    surface1 = cairo.ImageSurface(cairo.FORMAT_ARGB32, 220, 323)
+    ctx1 = cairo.Context(surface1)
+    # draw_bucket(ctx1, 105, 105, scale=1.3)
+    
+    draw_shredder(ctx1, 110, 185, scale=1.0)
+    # ctx1.set_source_rgb(1,1,1)
+    # ctx1.move_to(400,230)
+    # ctx1.line_to(400,700)
+    # ctx1.move_to(390,220)
+    # ctx1.line_to(70,220)
+    # ctx1.stroke()
+    surface1.write_to_png("cairo_image/shredder.png")
+    return surface1
+# get_shredder()
+# surface.write_to_png("mesin_shredder.png")
+# print("Selesai: mesin_shredder.png")

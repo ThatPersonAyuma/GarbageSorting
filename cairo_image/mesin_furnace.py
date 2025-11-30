@@ -1,7 +1,7 @@
 import cairo
 import math
 
-W, H = 1599, 899
+W, H = 220, 317
 surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
 ctx = cairo.Context(surface)
 
@@ -25,24 +25,27 @@ C_DETAILS = C_BUTTON_RED
 C_INPUT_PORT = c(120, 120, 120)
 
 #background
-ctx.set_source_rgb(*C_BACKGROUND)
-ctx.rectangle(0, 0, W, H)
-ctx.fill()
+# ctx.set_source_rgb(*C_BACKGROUND)
+# ctx.rectangle(0, 0, W, H)
+# ctx.fill()
 
 floor_y = int(H * 0.7)
-ctx.set_source_rgb(*C_FLOOR)
-ctx.rectangle(0, floor_y, W, H - floor_y)
-ctx.fill()
+# ctx.set_source_rgb(*C_FLOOR)
+# ctx.rectangle(0, floor_y, W, H - floor_y)
+# ctx.fill()
 
 #mesin
-CENTER_X = W // 2
-FURNACE_BASE_Y_COORD = floor_y - 30
+CENTER_X = (W // 2)
+FURNACE_BASE_Y_COORD = floor_y + 75
 SCALE = 1.0
 
 def draw_detailed_furnace(cx, cy_base, scale=1.0):
     ctx.save()
     ctx.translate(cx, cy_base)
-    ctx.scale(scale, scale)
+    # sx = scale[0] / bin_w
+    # sy = scale[1] / bin_h
+    # ctx.scale(sx, sy)
+    ctx.scale(220/500, 317/720)
 
     F_WIDTH = 500
     F_HEIGHT = 500
@@ -197,7 +200,13 @@ def draw_detailed_furnace(cx, cy_base, scale=1.0):
 
     ctx.restore()
 
-draw_detailed_furnace(CENTER_X, FURNACE_BASE_Y_COORD, scale=SCALE)
-
-surface.write_to_png("mesin_furnace.png")
-print("Selesai: mesin_furnace.png")
+def get_furnace():
+    draw_detailed_furnace(CENTER_X, FURNACE_BASE_Y_COORD, scale=SCALE)
+    return surface
+# draw_detailed_furnace(CENTER_X, FURNACE_BASE_Y_COORD, scale=SCALE)
+# ctx.set_source_rgb(0,0,0)
+# ctx.move_to(800, 0)
+# ctx.line_to(550, 650)
+# ctx.stroke()
+# surface.write_to_png("mesin_furnace.png")
+# print("Selesai: mesin_furnace.png")
