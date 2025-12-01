@@ -17,7 +17,7 @@ class ImageObject:
 
     def draw(self, screen):
         screen.blit(self.pygame_surface, self.rect)
-        pygame.draw.rect(screen, (255,255,255), self.rect, 3)
+        # pygame.draw.rect(screen, (255,255,255), self.rect, 3)
 
     def replace_pos(self, x, y):
         self.rect.x = x
@@ -78,7 +78,7 @@ class TrashBin(ImageObject):
         
     def is_valid_trash(self, trash_type:TrashType):
         return trash_type == self.bin_type
-    
+
 # class StackStore(ImageObject):
 #     def __init__(self, x: int, y: int, surface: cairo.ImageSurface, name: str = ""):
 #         super().__init__(x, y, surface, name)

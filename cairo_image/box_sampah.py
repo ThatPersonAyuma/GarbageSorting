@@ -319,18 +319,21 @@ def create_bin_surface(bin_w, bin_h, color_rgb, draw_logo_func=None, logo_scale=
         ctx.restore()
 
     return surface
-
+def nothing(ctx, scale=1.5, add_circle=True, circle_fill_color=None):
+    pass
 def get_bins():
     # warna box
     color_organic = c(255, 217, 0)
     color_plastic = c(0, 138, 57)
     color_others  = c(72, 72, 76)
+    color_decomp  = c(0,94,184)
     # buat masing-masing surface
     organic_surface = create_bin_surface(bin_w, bin_h, color_organic, draw_organic_logo, 1.5, (160, 200))
     plastic_surface = create_bin_surface(bin_w, bin_h, color_plastic, draw_realistic_bottle_logo, 1.0, (160, 200))
     other_surface   = create_bin_surface(bin_w, bin_h, color_others, draw_other_logo, 0.8, (160, 200))
-
+    decompose_bin = create_bin_surface(bin_w, bin_h, color_decomp, nothing, 0.8, (200, 250))
     # simpan sebagai file terpisah (opsional)
     return (plastic_surface,
         organic_surface,
-        other_surface)
+        other_surface,
+        decompose_bin)

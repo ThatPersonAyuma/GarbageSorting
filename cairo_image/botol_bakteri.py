@@ -2,7 +2,7 @@ import cairo
 import math
 
 W, H = 800, 1000 
-surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
+surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 550, 550)
 ctx = cairo.Context(surface)
 
 def c(r,g,b): return (r/255.0, g/255.0, b/255.0)
@@ -15,9 +15,9 @@ C_LINE = c(0, 0, 0)
 C_TEXT_BLACK = c(0, 0, 0)       
 
 #background
-ctx.set_source_rgb(*C_BACKGROUND)
-ctx.rectangle(0, 0, W, H)
-ctx.fill()
+# ctx.set_source_rgb(*C_BACKGROUND)
+# ctx.rectangle(0, 0, W, H)
+# ctx.fill()
 
 #bagian botol
 BOTTLE_CENTER_X = W // 2
@@ -98,7 +98,8 @@ def draw_em4_bottle(cx, cy_base, width, height):
 
     ctx.restore()
 
-draw_em4_bottle(BOTTLE_CENTER_X, BOTTLE_BASE_Y, BOTTLE_WIDTH, BOTTLE_HEIGHT)
-
-surface.write_to_png("botol_bakteri.png")
-print("Selesai: botol_bakteri.png")
+def get_m3bottle():
+    draw_em4_bottle(550/2, 450, BOTTLE_WIDTH, BOTTLE_HEIGHT)
+    return surface
+# surface.write_to_png("botol_bakteri.png")
+# print("Selesai: botol_bakteri.png")

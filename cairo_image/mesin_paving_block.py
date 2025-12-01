@@ -162,7 +162,7 @@ def draw_paving_press_ref(cx, cy_base, scale=1.0):
 
     # 5. Batang-batang Piston (dari mekanisme press merah ke bawah)
     PISTON_BAR_W = 20
-    PISTON_BAR_H = UPPER_FRAME_HEIGHT - PRESS_MECHANISM_H - 50
+    PISTON_BAR_H = UPPER_FRAME_HEIGHT - PRESS_MECHANISM_H - 100
     PISTON_BAR_Y_START = PRESS_MECHANISM_Y + PRESS_MECHANISM_H
 
     PISTON_COUNT = 4
@@ -179,7 +179,7 @@ def draw_paving_press_ref(cx, cy_base, scale=1.0):
     # Batang penghubung Piston
     PISTON_CONNECT_BAR_W = PRESS_MECHANISM_W * 0.7 + PISTON_BAR_W
     PISTON_CONNECT_BAR_H = 30
-    PISTON_CONNECT_BAR_Y = PISTON_BAR_Y_START + PISTON_BAR_H - PISTON_CONNECT_BAR_H
+    PISTON_CONNECT_BAR_Y = PISTON_BAR_Y_START + PISTON_BAR_H - PISTON_CONNECT_BAR_H 
     ctx.set_source_rgb(*C_ACCENT_RED)
     ctx.rectangle(-PISTON_CONNECT_BAR_W/2, PISTON_CONNECT_BAR_Y, PISTON_CONNECT_BAR_W, PISTON_CONNECT_BAR_H)
     ctx.fill_preserve()
