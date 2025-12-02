@@ -294,8 +294,6 @@ draw_label_inside(org_cx, y + bin_h - 60, "ORGANIC", c(0.12,0.12,0.12))
 draw_label_inside(pl_cx,  y + bin_h - 60, "PLASTIC", c(1,1,1))
 draw_label_inside(oth_cx, y + bin_h - 60, "OTHERS",  c(1,1,1))
 
-surface.write_to_png("box_sampah.png")
-print("Selesai: box_sampah.png")
 def create_bin_surface(bin_w, bin_h, color_rgb, draw_logo_func=None, logo_scale=1.0, scale=(bin_w, bin_h)):
     # buat surface baru untuk bin
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, scale[0], scale[1])

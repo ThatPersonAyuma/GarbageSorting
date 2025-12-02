@@ -57,6 +57,32 @@ class ImageObject:
     def return_scale(self):
         self.pygame_surface = convert.convert_cairo_to_pygame_surf(self.cairo_surface)
         # self.rect = self.old_rect
+    def clone(self):
+        # 1. clone cairo surface
+        w = self.cairo_surface.get_width()
+        h = self.cairo_surface.get_height()
+
+        new_cairo = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
+        ctx = cairo.Context(new_cairo)
+        ctx.set_source_surface(self.cairo_surface, 0, 0)
+        ctx.paint()
+
+        # 2. convert ke pygame surface baru
+        new_pygame = convert.convert_cairo_to_pygame_surf(new_cairo)
+
+        # 3. buat object baru
+        clone = ImageObject(
+            self.rect.x,
+            self.rect.y,
+            new_cairo,
+            self.name
+        )
+
+        clone.pygame_surface = new_pygame
+        clone.rect = new_pygame.get_rect(topleft=(self.rect.x, self.rect.y))
+        clone.origin = clone.rect.copy()
+
+        return clone
     
 class TrashType(enum.Enum):
     ORGANIC = "Organik"
@@ -69,7 +95,15 @@ class TrashObject(ImageObject):
         super().__init__(x, y, surface, name)
         self.type = type
         self.is_dragged = False
-        
+    def clone(self):
+        clone_base = super().clone()
+        return TrashObject(
+            clone_base.rect.x,
+            clone_base.rect.y,
+            clone_base.cairo_surface,
+            self.name,
+            self.type
+        )
     
 class TrashBin(ImageObject):
     def __init__(self, x: int, y: int, surface: cairo.ImageSurface, bin_type:TrashType, name: str = ""):

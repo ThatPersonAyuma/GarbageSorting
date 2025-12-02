@@ -253,7 +253,7 @@ def get_shredder():
     # ctx1.move_to(390,220)
     # ctx1.line_to(70,220)
     # ctx1.stroke()
-    surface1.write_to_png("cairo_image/shredder.png")
+    # surface1.write_to_png("cairo_image/shredder.png")
     return surface1
 # get_shredder()
 # surface.write_to_png("mesin_shredder.png")

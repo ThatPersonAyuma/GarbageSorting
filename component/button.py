@@ -29,9 +29,6 @@ class Button():
         self.normal_surf = self.render_cairo_button(color,rotate,font_size,text,w,h)
         self.hover_surf = self.render_cairo_button(hover_color,rotate,font_size,text,w,h)
         self.rect = pygame.Rect(x, y, self.normal_surf.get_width(), self.normal_surf.get_height())
-        print("Cairo:", w, h)
-        print("Pygame surf:", self.normal_surf.get_size())
-        print("Rect:", self.rect.size)
         
     def render_cairo_button(self, rgb, rotate, font_size, text,w,h):
         surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)

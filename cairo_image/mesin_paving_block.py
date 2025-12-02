@@ -240,7 +240,6 @@ def draw_paving_press_ref(cx, cy_base, scale=1.0):
 # surface.write_to_png("cairo_image/paving.png")
 def get_presser():
     draw_paving_press_ref(CENTER_X, MACHINE_BASE_Y_COORD, scale=SCALE)
-    surface.write_to_png("cairo_image/paving.png")
     return surface
 
 def get_paving_mold():

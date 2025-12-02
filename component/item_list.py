@@ -28,7 +28,6 @@ class ItemList:
         return self.inventory[self.position*self.max_show:(self.position+1)*self.max_show]
         
     def scroll_up(self)->bool:
-        print(f"Up {self.position}")
         if self.position>0:
             self.position-=1
             return True
@@ -36,7 +35,6 @@ class ItemList:
             return False
         
     def scroll_down(self)->bool:
-        print(f"Down len:{len(self.inventory)} max:{self.max_show}, Position:{self.position}")
         if self.position < ((len(self.inventory)-1)//self.max_show):
             self.position+=1
             return True
