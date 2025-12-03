@@ -10,7 +10,7 @@ from component.item_list import ItemList
 from component.objects import ImageObject, TrashObject, TrashType, TrashBin
 from component.text_area import create_text_box
 
-from scenes import IndustryRoom, outdoor, PickUpGarage, TrashTruck, home, Happyending
+from scenes import IndustryRoom, outdoor, PickUpGarage, TrashTruck, home, Happyending, Badending
 from cairo_image import *
 
 import copy
@@ -25,6 +25,7 @@ class Scene(Enum):
     WORKING = 3
     WELCOME = 4
     HAPPY = 5
+    BADED = 6
     TRANSTITION = -1
     
 
@@ -101,10 +102,6 @@ garbage = ItemList(rand_items, start_pos=SCROLL_POS, spacing=SCROLL_SPACING, max
 width, height = 100, 160
 spacing = 158
 trash_bin = (115, 350)
-# surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-# ctx = cairo.Context(surface)
-# ctx.set_source_rgb(1,1,0)
-# ctx.paint()
 trashbins = box_sampah.get_bins()
 trashbean_plastic = TrashBin(trash_bin[0], trash_bin[1], trashbins[0], TrashType.PLASTIC, "Tempat Sampah Plastik")
 surface1 = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
@@ -122,6 +119,13 @@ plastic_counter = 0
 organic_counter = 0
 pupuk_cair_counter = 0
 paving_block_counter = 0
+def reset_counter():
+    global plastic_counter,organic_counter,pupuk_cair_counter,paving_block_counter, garbage
+    garbage.refill(hold_items_trash)
+    plastic_counter = 0
+    organic_counter = 0
+    pupuk_cair_counter = 0
+    paving_block_counter = 0
 # endregion
 
 # region Buttons
@@ -154,7 +158,8 @@ def create_button_move_scene_call_welcome(next_state: Scene):
         progress = 0
         state = next_state
         next_scene = scene_b if current_scene == scene_a else scene_a
-        start()
+        reset_counter()
+        start_timer()
     return callback
 
 # Button settings
@@ -203,7 +208,7 @@ def create_wipe_mask(progress, direction):
 dragged_object:objects.TrashObject
 dragged_index:int
 def sorting_space():
-    global dragged_index, trashbeans, state, current_scene, dt, garbage, dragging, dragged_object, offset_x, offset_y, direction, next_scene, hold_item, old_hi_rect, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, decomp_stack_index, plastic_counter, organic_counter, pupuk_cair_counter, paving_block_counter, running, garbage
+    global dragged_index, trashbeans, state, current_scene, dt, garbage, dragging, dragged_object, offset_x, offset_y, direction, next_scene, hold_item, old_hi_rect, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, decomp_stack_index, plastic_counter, organic_counter, pupuk_cair_counter, paving_block_counter, running, garbage, timer
     screen.blit(current_scene, (0, 0))
     
     pos=pygame.mouse.get_pos()
@@ -275,6 +280,10 @@ def sorting_space():
                 if dragging:
                     mx, my = e.pos
                     dragged_object.replace_pos(mx + offset_x, my + offset_y)
+        if e.type == end_event:
+            callbaack_to_bad()
+        if e.type == timer_one_sec:
+            timer -= 1
         if e.type == TIMER_EVENT:
             if shredder_running:
                 if shredder_timer > 0: 
@@ -339,6 +348,8 @@ def sorting_space():
     if hold_item!=None:
         name = button_left.draw(screen)
         if name != None: hover_name=name
+    text_surf :pygame.Surface = create_text_box(get_timer_str(timer), 20, (0,0,0,0.5))
+    screen.blit(text_surf, (0, 0))
     pygame.display.flip()
     
 # endregion
@@ -355,7 +366,7 @@ next_to_outside = ImageObject(855,200,surface,"Pergi ke Luar")
 
 # region Home Space
 def home_space():
-    global  dt, state, screen,current_scene, in_transition, progress, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, decomp_stack_index, pupuk_cair_counter, paving_block_counter, running, garbage
+    global  dt, state, screen,current_scene, in_transition, progress, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, decomp_stack_index, pupuk_cair_counter, paving_block_counter, running, garbage, timer
     screen.blit(current_scene, (0, 0))
     hover_name = None
     pos = pygame.mouse.get_pos()
@@ -364,6 +375,10 @@ def home_space():
     elif next_to_outside.collide_point(pos):
         hover_name = next_to_outside.name
     for e in pygame.event.get():
+        if e.type == end_event:
+            callbaack_to_bad()
+        if e.type == timer_one_sec:
+            timer -= 1
         if e.type == pygame.QUIT:
             state = None
         if not in_transition:
@@ -463,7 +478,8 @@ def home_space():
         elif x<0:
             x = 0
         screen.blit(text_surf, (x, pos[1] + 20))
-    
+    text_surf :pygame.Surface = create_text_box(get_timer_str(timer), 20, (0,0,0,0.5))
+    screen.blit(text_surf, (0, 0))
     pygame.display.flip()
 # endregion
     
@@ -520,7 +536,7 @@ paving_mold_has_item = False
     
 # region Working Space
 def working_space():
-    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_object, offset_x, offset_y, hold_item, mold_hold_rect, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, decomp_stack_index, plastic_counter, pupuk_cair_counter, paving_block_counter, garbage
+    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_object, offset_x, offset_y, hold_item, mold_hold_rect, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, decomp_stack_index, plastic_counter, pupuk_cair_counter, paving_block_counter, garbage, timer
     screen.blit(current_scene, (0, 0))
     pos = pygame.mouse.get_pos()
     hover_name = None
@@ -588,7 +604,10 @@ def working_space():
                 if dragging:
                     mx, my = e.pos
                     dragged_object.replace_pos(mx + offset_x, my + offset_y)
-            
+        if e.type == end_event:
+            callbaack_to_bad()  
+        if e.type == timer_one_sec:
+            timer -= 1
         if e.type == TIMER_EVENT:
             if shredder_running:
                 if shredder_timer > 0: 
@@ -680,6 +699,8 @@ def working_space():
     if shredder_timer>0:screen.blit(create_text_box(create_time_text(shredder_timer), 20, (0,0,0,0.5)), (shredder.rect.topleft[0]+65, shredder.rect.topleft[1]))
     if furnace_timer>0:screen.blit(create_text_box(create_time_text(furnace_timer), 20, (0,0,0,0.5)), (furnace.rect.topleft[0]+63, furnace.rect.topleft[1]))
     if presser_timer>0:screen.blit(create_text_box(create_time_text(presser_timer), 20, (0,0,0,0.5)), (presser.rect.topleft[0]+65, presser.rect.topleft[1]))
+    text_surf :pygame.Surface = create_text_box(get_timer_str(timer), 20, (0,0,0,0.5))
+    screen.blit(text_surf, (0, 0))
     pygame.display.flip()
 # endregion
 
@@ -706,7 +727,7 @@ def fertilizer_created():
 
 # region Outside Space
 def outside_space():
-    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_index, dragged_object, offset_x, offset_y, decompose_stack, decomp_stack_index, hold_item, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, organic_counter, pupuk_cair_counter, paving_block_counter, running, rand_items, garbage
+    global  dt, state, screen,current_scene, in_transition, progress, dragging, dragged_index, dragged_object, offset_x, offset_y, decompose_stack, decomp_stack_index, hold_item, shredder_has_item, furnace_has_item, presser_has_item, shredder_bucket_has_item, paving_mold_has_item, presser_running, furnace_running, shredder_running, presser_timer, furnace_timer, shredder_timer, decomposer_running, decomposer_timer, organic_counter, pupuk_cair_counter, paving_block_counter, running, rand_items, garbage, timer
     screen.blit(current_scene, (0, 0))
     hover_name = None
     pos = pygame.mouse.get_pos()
@@ -759,6 +780,10 @@ def outside_space():
                     mx, my = e.pos
                     dragged_object.replace_pos(mx + offset_x, my + offset_y)
                     
+        if e.type == end_event:
+            callbaack_to_bad()
+        if e.type == timer_one_sec:
+            timer -= 1
         if e.type == TIMER_EVENT:
             if shredder_running:
                 if shredder_timer > 0: 
@@ -844,6 +869,8 @@ def outside_space():
             x = 0
         screen.blit(text_surf, (x, pos[1] + 20))
     if decomposer_timer>0:screen.blit(create_text_box(create_time_text(decomposer_timer), 20, (0,0,0,0.5)), (decompose_bin.rect.midtop[0]-45, decompose_bin.rect.midtop[1]))
+    text_surf :pygame.Surface = create_text_box(get_timer_str(timer), 20, (0,0,0,0.5))
+    screen.blit(text_surf, (0, 0))
     pygame.display.flip()
 # endregion
     
@@ -914,16 +941,30 @@ def ending_scene():
     button_play.draw(screen)        
     
     pygame.display.flip()
-    
+
+time = 300
+timer = time
+def get_timer_str(time: int):
+    global timer 
+    minut = time//60
+    reminder = time%60
+    if reminder <10:
+        return f"0{minut}:0{reminder}"
+    else:
+        return f"0{minut}:{reminder}"
+
 if __name__ == "__main__":
+    
     state = Scene.WELCOME
     hold_item = None
     old_hi_rect = None
     hold_item_rect = pygame.Rect(640, 530, 120, 150)
     callback_to_working = create_button_move_scene_call(Scene.WORKING)
-    callback_to_home = create_button_move_scene_call_welcome(Scene.HOME)
+    callback_to_home = create_button_move_scene_call(Scene.HOME)
+    callback_to_home_reset = create_button_move_scene_call_welcome(Scene.HOME)
     callback_to_outside = create_button_move_scene_call(Scene.OUTSIDE)
     callbaack_to_happy = create_button_move_scene_call(Scene.HAPPY)
+    callbaack_to_bad = create_button_move_scene_call(Scene.BADED)
     
     working_scene = convert.convert_cairo_to_pygame_surf(IndustryRoom.create())
     outside_sceen = convert.convert_cairo_to_pygame_surf(outdoor.create())
@@ -933,12 +974,17 @@ if __name__ == "__main__":
     current_scene = welcome
     
     happyend = convert.convert_cairo_to_pygame_surf(Happyending.get_happy())
+    badend = convert.convert_cairo_to_pygame_surf(Badending.get_bad())
     
     end_event = pygame.USEREVENT + 2
-    def start():
-        global end_event
+    timer_one_sec = pygame.USEREVENT + 3
+    def start_timer():
+        global end_event, timer, timer_one_sec
         pygame.time.set_timer(end_event, 0)
-        pygame.time.set_timer(end_event, 300000, loops=1)
+        pygame.time.set_timer(end_event, time*1000, loops=1)
+        timer = time
+        pygame.time.set_timer(timer_one_sec, 0)
+        pygame.time.set_timer(timer_one_sec, 1000, loops=time)
     # Folder tempat asset
     ASSET_DIR = Path(__file__).parent / "assets"
 
@@ -951,7 +997,7 @@ if __name__ == "__main__":
         match state:
             case Scene.WELCOME:
                 next_scene = welcome
-                button_play.callback = callback_to_home
+                button_play.callback = callback_to_home_reset
                 welcome_scene()
             case Scene.HOME:
                 next_scene = home_scene_bg
@@ -976,7 +1022,11 @@ if __name__ == "__main__":
                 state = Scene.HOME
             case Scene.HAPPY:
                 next_scene = happyend
-                button_play.callback = callback_to_home
+                button_play.callback = callback_to_home_reset
+                ending_scene()
+            case Scene.BADED:
+                next_scene = badend
+                button_play.callback = callback_to_home_reset
                 ending_scene()
             case _:
                 break

@@ -15,7 +15,7 @@ def get_bad():
     ctx.select_font_face("Arial", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
     ctx.set_font_size(50)
     text = "Yah kalah, coba lebih cepat!"
-    (x, y, width, height) = ((width / 2) - 350,( height / 2) - 50, 300, 50)
+    (x, y, width, height) = ((width / 2) - 350, height / 2 - 190, 300, 50)
     ctx.move_to(x, y + height)
     ctx.show_text(text)
     ctx.fill()

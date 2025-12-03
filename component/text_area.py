@@ -98,12 +98,12 @@ def create_text_box(text:str, font_size:int,  bg_color:tuple[float,float,float,f
     ctx.text_path(text)
 
     # --- Stroke Outline ---
-    ctx.set_source_rgb(0, 0, 0)      # warna outline: hitam
-    ctx.set_line_width(4)            # ketebalan outline
-    ctx.stroke_preserve()            # stroke tapi path-nya tetap ada
+    ctx.set_source_rgb(0, 0, 0)      
+    ctx.set_line_width(4)            
+    ctx.stroke_preserve()            
     
     # --- Fill Isi ---
-    ctx.set_source_rgb(1, 1, 1)      # warna fill: putih
+    ctx.set_source_rgb(1, 1, 1)      
     ctx.fill()
     ctx.restore()
     text_store[text] = convert.convert_cairo_to_pygame_surf(surface)
