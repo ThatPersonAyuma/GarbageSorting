@@ -10,7 +10,7 @@ from component.item_list import ItemList
 from component.objects import ImageObject, TrashObject, TrashType, TrashBin
 from component.text_area import create_text_box
 
-from scenes import IndustryRoom, outdoor, PickUpGarage, TrashTruck, home, Happyending, Badending
+from scenes import IndustryRoom, outdoor, PickUpGarage, TrashTruck, home, Happyending, Badending, truckAndGarage, TrukDatang
 from cairo_image import *
 
 import copy
@@ -26,6 +26,8 @@ class Scene(Enum):
     WELCOME = 4
     HAPPY = 5
     BADED = 6
+    INTRO1 = 7
+    INTRO2 = 8
     TRANSTITION = -1
     
 
@@ -160,6 +162,17 @@ def create_button_move_scene_call_welcome(next_state: Scene):
         next_scene = scene_b if current_scene == scene_a else scene_a
         reset_counter()
         start_timer()
+    return callback
+
+def create_button_move_scene_call_intro(next_state: Scene):
+    def callback():
+        global direction, in_transition, progress, state, next_scene
+        direction = "left"
+        in_transition = True
+        progress = 0
+        state = next_state
+        next_scene = scene_b if current_scene == scene_a else scene_a
+        scene_timer_start()
     return callback
 
 # Button settings
@@ -942,6 +955,64 @@ def ending_scene():
     
     pygame.display.flip()
 
+    
+
+def scene_intro1(callback):
+    global  dt, state, screen, current_scene, in_transition, progress
+    screen.blit(current_scene, (0, 0))
+
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+            state = None
+        if e.type == three_sec:
+            callback()
+                
+    # transition
+    if in_transition:
+        progress += dt * 1.2
+        progress = min(progress, 1)
+
+        mask = create_wipe_mask(progress, direction)
+
+        scene_temp = next_scene.copy()
+        scene_temp.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        screen.blit(scene_temp, (0, 0))
+
+        if progress >= 1:
+            current_scene = next_scene
+            in_transition = False
+         
+    
+    pygame.display.flip()
+    
+def scene_intro2(callback):
+    global  dt, state, screen, current_scene, in_transition, progress
+    screen.blit(current_scene, (0, 0))
+
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+            state = None
+        if e.type == three_sec:
+            callback()
+            
+    # transition
+    if in_transition:
+        progress += dt * 1.2
+        progress = min(progress, 1)
+
+        mask = create_wipe_mask(progress, direction)
+
+        scene_temp = next_scene.copy()
+        scene_temp.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        screen.blit(scene_temp, (0, 0))
+
+        if progress >= 1:
+            current_scene = next_scene
+            in_transition = False 
+    
+    pygame.display.flip()
+    
+    
 time = 300
 timer = time
 def get_timer_str(time: int):
@@ -952,7 +1023,8 @@ def get_timer_str(time: int):
         return f"0{minut}:0{reminder}"
     else:
         return f"0{minut}:{reminder}"
-
+    
+    
 if __name__ == "__main__":
     
     state = Scene.WELCOME
@@ -965,19 +1037,26 @@ if __name__ == "__main__":
     callback_to_outside = create_button_move_scene_call(Scene.OUTSIDE)
     callbaack_to_happy = create_button_move_scene_call(Scene.HAPPY)
     callbaack_to_bad = create_button_move_scene_call(Scene.BADED)
+    callbaack_to_intro1 = create_button_move_scene_call_intro(Scene.INTRO1)
+    callbaack_to_intro2 = create_button_move_scene_call(Scene.INTRO2)
     
     working_scene = convert.convert_cairo_to_pygame_surf(IndustryRoom.create())
     outside_sceen = convert.convert_cairo_to_pygame_surf(outdoor.create())
     home_scene_bg = convert.convert_cairo_to_pygame_surf(PickUpGarage.create())
     pickup_truck = convert.convert_cairo_to_pygame_surf(TrashTruck.create())
     welcome = convert.convert_cairo_to_pygame_surf(home.get_home())
+    intro = convert.convert_cairo_to_pygame_surf(truckAndGarage.create())
+    
     current_scene = welcome
     
+    truck_datang = convert.convert_cairo_to_pygame_surf(TrukDatang.get_truck_datang())
     happyend = convert.convert_cairo_to_pygame_surf(Happyending.get_happy())
     badend = convert.convert_cairo_to_pygame_surf(Badending.get_bad())
     
     end_event = pygame.USEREVENT + 2
     timer_one_sec = pygame.USEREVENT + 3
+    three_sec = pygame.USEREVENT + 4
+    
     def start_timer():
         global end_event, timer, timer_one_sec
         pygame.time.set_timer(end_event, 0)
@@ -985,6 +1064,11 @@ if __name__ == "__main__":
         timer = time
         pygame.time.set_timer(timer_one_sec, 0)
         pygame.time.set_timer(timer_one_sec, 1000, loops=time)
+        
+    def scene_timer_start():
+        global three_sec
+        pygame.time.set_timer(three_sec, 0)
+        pygame.time.set_timer(three_sec, 5000, loops=2) 
     # Folder tempat asset
     ASSET_DIR = Path(__file__).parent / "assets"
 
@@ -997,8 +1081,14 @@ if __name__ == "__main__":
         match state:
             case Scene.WELCOME:
                 next_scene = welcome
-                button_play.callback = callback_to_home_reset
+                button_play.callback = callbaack_to_intro1
                 welcome_scene()
+            case Scene.INTRO1:
+                next_scene = intro
+                scene_intro1(callbaack_to_intro2)
+            case Scene.INTRO2:
+                next_scene = truck_datang
+                scene_intro2(callback_to_home_reset)
             case Scene.HOME:
                 next_scene = home_scene_bg
                 button_right.name = "Pergi ke Ruang Kerajinan"

@@ -1,5 +1,5 @@
 # Define the __all__ variable
-__all__ = ["IndustryRoom", "outdoor", "PickUpGarage", "TrashTruck", "home", "TrukDatang"]
+__all__ = ["IndustryRoom", "outdoor", "PickUpGarage", "TrashTruck", "home", "TrukDatang", "truckAndGarage"]
 
 # Import the submodules
 from . import IndustryRoom
@@ -8,4 +8,4 @@ from . import PickUpGarage
 from . import TrashTruck
 from . import home
 from . import TrukDatang
-from . import trukandGarage
+from . import truckAndGarage
