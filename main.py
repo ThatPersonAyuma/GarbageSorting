@@ -461,38 +461,39 @@ def home_space():
         if progress >= 1:
             current_scene = next_scene
             in_transition = False
-    for trashbean in trashbeans:
-        trashbean.draw(screen)
-    # draw_buttons()
-    if hold_item != None:
-        hold_item.draw(screen)
-        if hold_item.collide_point(pos):
-            hover_name = hold_item.name
-        if hold_item == trashbeans[0]: # plastik
-            text_surf :pygame.Surface = create_text_box(f"Paving Block: {paving_block_counter}/4", 20, (0,0,0,0.5))
-            screen.blit(text_surf, (500, 0))
-        elif hold_item == trashbeans[1]: # organik
-            text_surf :pygame.Surface = create_text_box(f"Pupuk Cair: {pupuk_cair_counter}/2", 20, (0,0,0,0.5))
-            screen.blit(text_surf, (500, 0))
     else:
-        text_surf :pygame.Surface = create_text_box(f"Pilah Sampah dan Ambil Salah Satu Tempat Sampah", 20, (0,0,0,0.5))
-        screen.blit(text_surf, (400, 0))
-    name = button_right.draw(screen)
-    if name != None: hover_name=name
-    next_to_sorting.draw(screen)
-    next_to_outside.draw(screen)
-    if hold_item!=None:hold_item.draw(screen)
-    if hover_name!=None:
-        # print(hover_name)
-        text_surf :pygame.Surface = create_text_box(hover_name, 20, (0,0,0,0.5))
-        x = pos[0]-text_surf.width//2
-        if x+text_surf.get_width()>WIDTH:
-            x = WIDTH-text_surf.get_width()
-        elif x<0:
-            x = 0
-        screen.blit(text_surf, (x, pos[1] + 20))
-    text_surf :pygame.Surface = create_text_box(get_timer_str(timer), 20, (0,0,0,0.5))
-    screen.blit(text_surf, (0, 0))
+        for trashbean in trashbeans:
+            trashbean.draw(screen)
+    # draw_buttons()
+        if hold_item != None:
+            hold_item.draw(screen)
+            if hold_item.collide_point(pos):
+                hover_name = hold_item.name
+            if hold_item == trashbeans[0]: # plastik
+                text_surf :pygame.Surface = create_text_box(f"Paving Block: {paving_block_counter}/4", 20, (0,0,0,0.5))
+                screen.blit(text_surf, (500, 0))
+            elif hold_item == trashbeans[1]: # organik
+                text_surf :pygame.Surface = create_text_box(f"Pupuk Cair: {pupuk_cair_counter}/2", 20, (0,0,0,0.5))
+                screen.blit(text_surf, (500, 0))
+        else:
+            text_surf :pygame.Surface = create_text_box(f"Pilah Sampah dan Ambil Salah Satu Tempat Sampah", 20, (0,0,0,0.5))
+            screen.blit(text_surf, (400, 0))
+        name = button_right.draw(screen)
+        if name != None: hover_name=name
+        next_to_sorting.draw(screen)
+        next_to_outside.draw(screen)
+        if hold_item!=None:hold_item.draw(screen)
+        if hover_name!=None:
+            text_surf :pygame.Surface = create_text_box(hover_name, 20, (0,0,0,0.5))
+            x = pos[0]-text_surf.width//2
+            if x+text_surf.get_width()>WIDTH:
+                x = WIDTH-text_surf.get_width()
+            elif x<0:
+                x = 0
+            screen.blit(text_surf, (x, pos[1] + 20))
+        text_surf :pygame.Surface = create_text_box(get_timer_str(timer), 20, (0,0,0,0.5))
+        screen.blit(text_surf, (0, 0))
+        
     pygame.display.flip()
 # endregion
     
@@ -673,47 +674,47 @@ def working_space():
         if progress >= 1:
             current_scene = next_scene
             in_transition = False
-            
-    name = button_left.draw(screen)
-    if name != None: hover_name=name
-    if shredder_bucket.collide_point(pos):
-        hover_name = shredder_bucket.name
-    elif paving_mold.collide_point(pos):
-        hover_name = paving_mold.name
-    furnace.draw(screen)
-    shredder.draw(screen)
-    presser.draw(screen)
-    shredder_bucket.draw(screen)
-    paving_mold.draw(screen)
-    if dragging: 
-        dragged_object.draw(screen)
-    if hold_item != None:
-        hold_item.draw(screen)
-        if hold_item.collide_point(pos):
-            hover_name = hold_item.name
-        if hold_item == trashbeans[0]: # plastik
-            text_surf :pygame.Surface = create_text_box(f"Paving Block: {paving_block_counter}/4", 20, (0,0,0,0.5))
-            screen.blit(text_surf, (500, 0))
-        elif hold_item == trashbeans[1]: # organik
-            text_surf :pygame.Surface = create_text_box(f"Pupuk Cair: {pupuk_cair_counter}/2", 20, (0,0,0,0.5))
-            screen.blit(text_surf, (500, 0))
     else:
-        text_surf :pygame.Surface = create_text_box(f"Pilah Sampah dan Ambil Salah Satu Tempat Sampah", 20, (0,0,0,0.5))
-        screen.blit(text_surf, (400, 0))
-    if hover_name!=None:
-        # print(hover_name)
-        text_surf :pygame.Surface = create_text_box(hover_name, 20, (0,0,0,0.5))
-        x = pos[0]-text_surf.width//2
-        if x+text_surf.get_width()>WIDTH:
-            x = WIDTH-text_surf.get_width()
-        elif x<0:
-            x = 0
-        screen.blit(text_surf, (x, pos[1] + 20))
-    if shredder_timer>0:screen.blit(create_text_box(create_time_text(shredder_timer), 20, (0,0,0,0.5)), (shredder.rect.topleft[0]+65, shredder.rect.topleft[1]))
-    if furnace_timer>0:screen.blit(create_text_box(create_time_text(furnace_timer), 20, (0,0,0,0.5)), (furnace.rect.topleft[0]+63, furnace.rect.topleft[1]))
-    if presser_timer>0:screen.blit(create_text_box(create_time_text(presser_timer), 20, (0,0,0,0.5)), (presser.rect.topleft[0]+65, presser.rect.topleft[1]))
-    text_surf :pygame.Surface = create_text_box(get_timer_str(timer), 20, (0,0,0,0.5))
-    screen.blit(text_surf, (0, 0))
+        name = button_left.draw(screen)
+        if name != None: hover_name=name
+        if shredder_bucket.collide_point(pos):
+            hover_name = shredder_bucket.name
+        elif paving_mold.collide_point(pos):
+            hover_name = paving_mold.name
+        furnace.draw(screen)
+        shredder.draw(screen)
+        presser.draw(screen)
+        shredder_bucket.draw(screen)
+        paving_mold.draw(screen)
+        if dragging: 
+            dragged_object.draw(screen)
+        if hold_item != None:
+            hold_item.draw(screen)
+            if hold_item.collide_point(pos):
+                hover_name = hold_item.name
+            if hold_item == trashbeans[0]: # plastik
+                text_surf :pygame.Surface = create_text_box(f"Paving Block: {paving_block_counter}/4", 20, (0,0,0,0.5))
+                screen.blit(text_surf, (500, 0))
+            elif hold_item == trashbeans[1]: # organik
+                text_surf :pygame.Surface = create_text_box(f"Pupuk Cair: {pupuk_cair_counter}/2", 20, (0,0,0,0.5))
+                screen.blit(text_surf, (500, 0))
+        else:
+            text_surf :pygame.Surface = create_text_box(f"Pilah Sampah dan Ambil Salah Satu Tempat Sampah", 20, (0,0,0,0.5))
+            screen.blit(text_surf, (400, 0))
+        if hover_name!=None:
+            # print(hover_name)
+            text_surf :pygame.Surface = create_text_box(hover_name, 20, (0,0,0,0.5))
+            x = pos[0]-text_surf.width//2
+            if x+text_surf.get_width()>WIDTH:
+                x = WIDTH-text_surf.get_width()
+            elif x<0:
+                x = 0
+            screen.blit(text_surf, (x, pos[1] + 20))
+        if shredder_timer>0:screen.blit(create_text_box(create_time_text(shredder_timer), 20, (0,0,0,0.5)), (shredder.rect.topleft[0]+65, shredder.rect.topleft[1]))
+        if furnace_timer>0:screen.blit(create_text_box(create_time_text(furnace_timer), 20, (0,0,0,0.5)), (furnace.rect.topleft[0]+63, furnace.rect.topleft[1]))
+        if presser_timer>0:screen.blit(create_text_box(create_time_text(presser_timer), 20, (0,0,0,0.5)), (presser.rect.topleft[0]+65, presser.rect.topleft[1]))
+        text_surf :pygame.Surface = create_text_box(get_timer_str(timer), 20, (0,0,0,0.5))
+        screen.blit(text_surf, (0, 0))
     pygame.display.flip()
 # endregion
 
@@ -850,40 +851,40 @@ def outside_space():
         if progress >= 1:
             current_scene = next_scene
             in_transition = False
-            
-    decompose_bin.draw(screen)
-    if dragging: 
-        dragged_object.draw(screen)
-    if hold_item != None:
-        hold_item.draw(screen)
-        if hold_item.collide_point(pos):
-            hover_name = hold_item.name
-        if hold_item == trashbeans[0]: # plastik
-            text_surf :pygame.Surface = create_text_box(f"Paving Block: {paving_block_counter}/4", 20, (0,0,0,0.5))
-            screen.blit(text_surf, (500, 0))
-        elif hold_item == trashbeans[1]: # organik
-            text_surf :pygame.Surface = create_text_box(f"Pupuk Cair: {pupuk_cair_counter}/2", 20, (0,0,0,0.5))
-            screen.blit(text_surf, (500, 0))
     else:
-        text_surf :pygame.Surface = create_text_box(f"Pilah Sampah dan Ambil Salah Satu Tempat Sampah", 20, (0,0,0,0.5))
-        screen.blit(text_surf, (400, 0))
-    if decompose_bin.collide_point(pos):
-        hover_name = decompose_bin.name
-    name = button_left.draw(screen)
-    if name != None: hover_name=name
-    outside_items.draw(screen)
-    if hover_name!=None:
-        # print(hover_name)
-        text_surf :pygame.Surface = create_text_box(hover_name, 20, (0,0,0,0.5))
-        x = pos[0]-text_surf.width//2
-        if x+text_surf.get_width()>WIDTH:
-            x = WIDTH-text_surf.get_width()
-        elif x<0:
-            x = 0
-        screen.blit(text_surf, (x, pos[1] + 20))
-    if decomposer_timer>0:screen.blit(create_text_box(create_time_text(decomposer_timer), 20, (0,0,0,0.5)), (decompose_bin.rect.midtop[0]-45, decompose_bin.rect.midtop[1]))
-    text_surf :pygame.Surface = create_text_box(get_timer_str(timer), 20, (0,0,0,0.5))
-    screen.blit(text_surf, (0, 0))
+        decompose_bin.draw(screen)
+        if dragging: 
+            dragged_object.draw(screen)
+        if hold_item != None:
+            hold_item.draw(screen)
+            if hold_item.collide_point(pos):
+                hover_name = hold_item.name
+            if hold_item == trashbeans[0]: # plastik
+                text_surf :pygame.Surface = create_text_box(f"Paving Block: {paving_block_counter}/4", 20, (0,0,0,0.5))
+                screen.blit(text_surf, (500, 0))
+            elif hold_item == trashbeans[1]: # organik
+                text_surf :pygame.Surface = create_text_box(f"Pupuk Cair: {pupuk_cair_counter}/2", 20, (0,0,0,0.5))
+                screen.blit(text_surf, (500, 0))
+        else:
+            text_surf :pygame.Surface = create_text_box(f"Pilah Sampah dan Ambil Salah Satu Tempat Sampah", 20, (0,0,0,0.5))
+            screen.blit(text_surf, (400, 0))
+        if decompose_bin.collide_point(pos):
+            hover_name = decompose_bin.name
+        name = button_left.draw(screen)
+        if name != None: hover_name=name
+        outside_items.draw(screen)
+        if hover_name!=None:
+            # print(hover_name)
+            text_surf :pygame.Surface = create_text_box(hover_name, 20, (0,0,0,0.5))
+            x = pos[0]-text_surf.width//2
+            if x+text_surf.get_width()>WIDTH:
+                x = WIDTH-text_surf.get_width()
+            elif x<0:
+                x = 0
+            screen.blit(text_surf, (x, pos[1] + 20))
+        if decomposer_timer>0:screen.blit(create_text_box(create_time_text(decomposer_timer), 20, (0,0,0,0.5)), (decompose_bin.rect.midtop[0]-45, decompose_bin.rect.midtop[1]))
+        text_surf :pygame.Surface = create_text_box(get_timer_str(timer), 20, (0,0,0,0.5))
+        screen.blit(text_surf, (0, 0))
     pygame.display.flip()
 # endregion
     
@@ -915,9 +916,9 @@ def welcome_scene():
         if progress >= 1:
             current_scene = next_scene
             in_transition = False
-    
-    button_exit.draw(screen)
-    button_play.draw(screen)        
+    else:
+        button_exit.draw(screen)
+        button_play.draw(screen)        
     
     pygame.display.flip()
     
@@ -949,9 +950,10 @@ def ending_scene():
         if progress >= 1:
             current_scene = next_scene
             in_transition = False
+    else:
+        button_exit.draw(screen)
+        button_play.draw(screen)        
     
-    button_exit.draw(screen)
-    button_play.draw(screen)        
     
     pygame.display.flip()
 
