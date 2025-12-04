@@ -530,9 +530,9 @@ def create_time_text(time:int)->str:
 # SHREDDER_TIME = 30
 # FURNACE_TIME = 45
 # PRESSER_TIME = 30
-SHREDDER_TIME = 3
-FURNACE_TIME = 4
-PRESSER_TIME = 3
+SHREDDER_TIME = 10
+FURNACE_TIME = 15
+PRESSER_TIME = 12
 shredder_timer:int = 0
 furnace_timer:int = 0
 presser_timer:int = 0
@@ -546,7 +546,7 @@ furnace_has_item = False
 presser_has_item = False
 shredder_bucket_has_item = False
 paving_mold_has_item = False
-# endregion
+# endregiondecomposer_timer
     
 # region Working Space
 def working_space():
@@ -732,7 +732,7 @@ decomp_bin_img = trashbins[3]
 decompose_bin = TrashObject(350,250, decomp_bin_img, "Ember Dekompos", TrashType.OTHERS)
 decompose_stack = [decomp_starter, trashbean_organic, water]
 decomp_stack_index = len(decompose_stack)-1
-DECOMPOSER_TIME = 6 
+DECOMPOSER_TIME = 25
 decomposer_timer = 0 
 decomposer_running = False
 def fertilizer_created():
